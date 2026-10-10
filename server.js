@@ -17,7 +17,7 @@ const ai = new GoogleGenAI({
 });
 
 app.get("/", (req, res) => {
-  res.send("BizAI Server is running!");
+  res.sendFile(__dirname + "/index.html");
 });
 
 app.post("/api/chat", async (req, res) => {
