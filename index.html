@@ -1,225 +1,118 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BizAI - AI Business Advisor</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      background: #f4f7fb;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .app {
-      width: 95%;
-      max-width: 900px;
-      height: 90vh;
-      background: white;
-      border-radius: 18px;
-      box-shadow: 0 10px 35px rgba(0,0,0,0.12);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .header {
-      background: #111827;
-      color: white;
-      padding: 22px;
-    }
-
-    .header h1 {
-      font-size: 26px;
-    }
-
-    .header p {
-      margin-top: 5px;
-      color: #cbd5e1;
-    }
-
-    .chat {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .message {
-      max-width: 75%;
-      padding: 12px 16px;
-      margin-bottom: 14px;
-      border-radius: 14px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-
-    .ai {
-      background: #eef2ff;
-      color: #111827;
-      margin-right: auto;
-    }
-
-    .user {
-      background: #2563eb;
-      color: white;
-      margin-left: auto;
-    }
-
-    .input-area {
-      display: flex;
-      gap: 10px;
-      padding: 15px;
-      border-top: 1px solid #e5e7eb;
-      background: #fafafa;
-    }
-
-    .input-area input {
-      flex: 1;
-      padding: 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      outline: none;
-      font-size: 16px;
-    }
-
-    .input-area button {
-      padding: 14px 22px;
-      border: none;
-      border-radius: 10px;
-      background: #2563eb;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .input-area button:hover {
-      background: #1d4ed8;
-    }
-
-    .input-area button:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bizvanta AI — Business Advisor</title>
+<style>
+:root{--bg:#fff;--panel:#f7f7f9;--text:#202123;--muted:#777;--line:#e5e7eb;--green:#10a37f;--hover:#e9e9ee}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:270px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column}
+.brand{font-size:23px;font-weight:750;padding:8px 10px 24px}
+.brand span{color:var(--green)}
+.newchat{padding:13px;border:1px solid #d1d5db;border-radius:12px;background:#fff;text-align:left;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:24px}
+.section{font-size:12px;color:#777;letter-spacing:1px;margin:0 10px 10px}
+.topic{border:0;background:transparent;padding:12px 10px;text-align:left;font-size:14px;border-radius:9px;cursor:pointer;color:var(--text)}
+.topic:hover,.history-item:hover{background:var(--hover)}
+.history{margin-top:24px;overflow:auto}
+.history-item{border:0;background:transparent;text-align:left;padding:10px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.footer{margin-top:auto;text-align:center;font-size:12px;color:var(--muted);padding:12px 4px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:#fff}
+.topbar{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;font-weight:600}
+.mobile-menu{display:none;border:0;background:none;font-size:22px;margin-right:12px}
+.messages{flex:1;overflow:auto;padding:30px 20px 150px}
+.welcome{max-width:720px;margin:8vh auto 0;text-align:center}
+.welcome h1{font-size:34px;margin:0 0 12px}
+.welcome p{color:var(--muted);font-size:16px}
+.suggestions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}
+.suggestion{background:white;border:1px solid var(--line);border-radius:14px;text-align:left;padding:17px;cursor:pointer;font-size:14px}
+.suggestion:hover{background:#fafafa;border-color:#bbb}
+.message{max-width:850px;margin:0 auto 26px;display:flex;gap:14px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.avatar{width:32px;height:32px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:#e3f4ed;font-weight:bold;color:#08785d}
+.user .avatar{background:#e8e8ef;color:#333}
+.content{padding-top:4px;flex:1}
+.composer-wrap{position:absolute;bottom:0;left:270px;right:0;background:linear-gradient(transparent,#fff 24%);padding:30px 24px 14px}
+.composer{max-width:850px;margin:auto;border:1px solid #d1d5db;border-radius:18px;padding:10px 12px;display:flex;align-items:flex-end;gap:8px;box-shadow:0 5px 20px #0000000a}
+textarea{flex:1;resize:none;border:0;outline:none;font:16px Arial;max-height:180px;min-height:34px;padding:8px;background:transparent}
+.iconbtn{border:0;background:transparent;border-radius:10px;padding:9px;cursor:pointer;font-size:19px}
+.iconbtn:hover{background:var(--hover)}
+.send{background:#202123;color:white;border-radius:50%;width:40px;height:40px;font-size:20px}
+.send:disabled{opacity:.45;cursor:not-allowed}
+.note{text-align:center;color:#888;font-size:11px;margin:9px auto 0;max-width:850px}
+.status{color:#b45309;font-size:12px;text-align:center;margin-top:5px}
+@media(max-width:700px){.sidebar{position:fixed;z-index:5;left:-280px;top:0;bottom:0;transition:left .2s;box-shadow:0 0 0 transparent}.sidebar.open{left:0;box-shadow:0 0 0 100vmax #0006}.mobile-menu{display:block}.topbar{padding:0 14px}.composer-wrap{left:0;padding:20px 10px 10px}.messages{padding:20px 12px 140px}.welcome{margin-top:8vh}.welcome h1{font-size:28px}.suggestions{grid-template-columns:1fr}.brand{padding-bottom:15px}}
+</style>
 </head>
-
 <body>
-
-  <div class="app">
-
-    <div class="header">
-      <h1>🤖 BizAI</h1>
-      <p>AI Business Advisor</p>
-    </div>
-
-    <div class="chat" id="chat">
-
-      <div class="message ai">
-        Hello! 👋 I am BizAI.
-
-        Ask me anything about your business, marketing, sales, customers, pricing, or business ideas.
-      </div>
-
-    </div>
-
-    <div class="input-area">
-      <input
-        id="messageInput"
-        type="text"
-        placeholder="Ask BizAI something..."
-        onkeydown="handleKey(event)"
-      >
-
-      <button id="sendButton" onclick="sendMessage()">
-        Send
-      </button>
-    </div>
-
-  </div>
-
-  <script>
-    async function sendMessage() {
-
-      const input = document.getElementById("messageInput");
-      const button = document.getElementById("sendButton");
-      const chat = document.getElementById("chat");
-
-      const message = input.value.trim();
-
-      if (!message) {
-        return;
-      }
-
-      const userMessage = document.createElement("div");
-      userMessage.className = "message user";
-      userMessage.innerText = message;
-
-      chat.appendChild(userMessage);
-
-      input.value = "";
-      button.disabled = true;
-      button.innerText = "Thinking...";
-
-      chat.scrollTop = chat.scrollHeight;
-
-      try {
-
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: message
-          })
-        });
-
-        const data = await response.json();
-
-        const aiMessage = document.createElement("div");
-        aiMessage.className = "message ai";
-
-        if (data.reply) {
-          aiMessage.innerText = data.reply;
-        } else {
-          aiMessage.innerText = "Sorry, I could not get a response.";
-        }
-
-        chat.appendChild(aiMessage);
-
-      } catch (error) {
-
-        const errorMessage = document.createElement("div");
-        errorMessage.className = "message ai";
-        errorMessage.innerText =
-          "Connection error. Please make sure the BizAI server is running.";
-
-        chat.appendChild(errorMessage);
-
-      }
-
-      button.disabled = false;
-      button.innerText = "Send";
-
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function handleKey(event) {
-      if (event.key === "Enter") {
-        sendMessage();
-      }
-    }
-  </script>
-
+<div class="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">Bizvanta <span>AI</span></div>
+<button class="newchat" id="newChat">＋ &nbsp; New Chat</button>
+<div class="section">EXPLORE TOPICS</div>
+<button class="topic" data-topic="Business Ideas">💡 &nbsp; Business Ideas</button>
+<button class="topic" data-topic="Business Advisor">🧭 &nbsp; Business Advisor</button>
+<button class="topic" data-topic="Marketing & Branding">🎯 &nbsp; Marketing & Branding</button>
+<button class="topic" data-topic="Sales & Growth">📈 &nbsp; Sales & Growth</button>
+<button class="topic" data-topic="Pricing & Budget">💰 &nbsp; Pricing & Budget</button>
+<button class="topic" data-topic="Customers & Service">🤝 &nbsp; Customers & Service</button>
+<div class="history">
+<div class="section">RECENT CHATS</div>
+<div id="historyList"></div>
+</div>
+<div class="footer">Your business partner, powered by AI.</div>
+</aside>
+<main class="main">
+<header class="topbar"><button class="mobile-menu" id="menuBtn">☰</button>Bizvanta AI</header>
+<div class="messages" id="messages">
+<div class="welcome" id="welcome">
+<h1>What can I help you build?</h1>
+<p>Your AI business partner for ideas, marketing, sales and growth.</p>
+<div class="suggestions">
+<button class="suggestion">💡 Give me 5 small business ideas.</button>
+<button class="suggestion">📈 How can I get more customers?</button>
+<button class="suggestion">🎯 Create a marketing plan for my business.</button>
+<button class="suggestion">💰 Help me set prices and a budget.</button>
+</div>
+</div>
+</div>
+<div class="composer-wrap">
+<div class="composer">
+<textarea id="input" rows="1" placeholder="Message Bizvanta AI..."></textarea>
+<select id="language" aria-label="Voice input language" style="border:0;background:transparent;padding:8px 0;color:#555">
+<option value="en-US">English</option>
+<option value="ur-PK">Urdu</option>
+</select>
+<button class="iconbtn" id="mic" title="Voice to text">🎙</button>
+<button class="iconbtn send" id="send" title="Send">↑</button>
+</div>
+<div class="status" id="status"></div>
+<div class="note">Check important information before acting. Bizvanta AI can make mistakes.</div>
+</div>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const input=$('input'),messages=$('messages'),welcome=$('welcome'),statusBox=$('status');
+let chats=JSON.parse(localStorage.getItem('bizvanta-chats')||'[]'),activeId=null,topic='',busy=false;
+function save(){localStorage.setItem('bizvanta-chats',JSON.stringify(chats));renderHistory()}
+function current(){let c=chats.find(x=>x.id===activeId);if(!c){c={id:Date.now().toString(),title:'New Chat',messages:[]};chats.unshift(c);activeId=c.id}return c}
+function renderHistory(){const box=$('historyList');box.innerHTML='';chats.forEach(c=>{const b=document.createElement('button');b.className='history-item';b.style.width='100%';b.textContent=c.title||'New Chat';b.onclick=()=>openChat(c.id);box.appendChild(b)})}
+function addMessage(role,text){welcome.style.display='none';const row=document.createElement('div');row.className='message '+(role==='user'?'user':'assistant');const avatar=document.createElement('div');avatar.className='avatar';avatar.textContent=role==='user'?'You':'B';const content=document.createElement('div');content.className='content';content.textContent=text;row.append(avatar,content);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;return content}
+function openChat(id){activeId=id;messages.innerHTML='';const c=chats.find(x=>x.id===id);if(!c||!c.messages.length){messages.appendChild(welcome);welcome.style.display='block'}else{welcome.style.display='none';c.messages.forEach(m=>addMessage(m.role,m.text))} $('sidebar').classList.remove('open')}
+function newChat(){activeId=null;topic='';messages.innerHTML='';messages.appendChild(welcome);welcome.style.display='block';input.value='';statusBox.textContent=''}
+async function sendMessage(text){text=(text||input.value).trim();if(!text||busy)return;busy=true;$('send').disabled=true;input.value='';input.style.height='34px';const c=current();if(!c.messages.length)c.title=text.slice(0,35);const full=topic?'['+topic+'] '+text:text;c.messages.push({role:'user',text});addMessage('user',text);save();const answer=addMessage('assistant','Thinking…');
+try{const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:full})});const data=await res.json();if(!res.ok)throw new Error(data.error||data.message||'Server error '+res.status);const reply=data.reply??data.response??data.text??data.message;if(!reply)throw new Error('Server response mein reply nahi mila.');answer.textContent=reply;c.messages.push({role:'assistant',text:reply});save()}catch(e){answer.textContent='Sorry, AI connection nahi ho saka: '+e.message+' . Server/API settings check karein.';statusBox.textContent='AI connection issue';}finally{busy=false;$('send').disabled=false;messages.scrollTop=messages.scrollHeight}}
+$('send').onclick=()=>sendMessage();input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});input.addEventListener('input',()=>{input.style.height='34px';input.style.height=Math.min(input.scrollHeight,180)+'px'});
+$('newChat').onclick=newChat;$('menuBtn').onclick=()=>$('sidebar').classList.toggle('open');
+document.querySelectorAll('.topic').forEach(b=>b.onclick=()=>{topic=b.dataset.topic;input.value='';input.placeholder='Ask about '+topic+'...';input.focus();$('sidebar').classList.remove('open')});
+document.querySelectorAll('.suggestion').forEach(b=>b.onclick=()=>sendMessage(b.textContent.replace(/^[^ ]+ /,'')));
+let recognition=null,listening=false;
+if('webkitSpeechRecognition'in window||'SpeechRecognition'in window){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.interimResults=true;recognition.continuous=false;recognition.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;input.value=t};recognition.onend=()=>{listening=false;$('mic').textContent='🎙';statusBox.textContent='';input.focus()};recognition.onerror=e=>{statusBox.textContent='Voice input error: '+e.error;listening=false;$('mic').textContent='🎙'}}
+$('mic').onclick=()=>{if(!recognition){statusBox.textContent='Voice input is not supported in this browser. Try Chrome.';return}if(listening){recognition.stop();return}recognition.lang=$('language').value;listening=true;$('mic').textContent='⏹';statusBox.textContent='Listening…';recognition.start()};
+renderHistory();
+</script>
 </body>
 </html>
