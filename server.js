@@ -1,128 +1,133 @@
 
 const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
 const path = require("path");
-const { GoogleGenAI } = require("@google/genai");
-
-dotenv.config();
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const API_KEY = process.env.GEMINI_API_KEY;
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 
-app.use(cors());
-app.use(express.json({ limit: "20kb" }));
+// Static files: index.html, CSS, JavaScript
+app.use(express.static(__dirname));
 
-app.use(express.static(__dirname, { index: false }));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-function getGreeting(message) {
-  const text = message.trim().toLowerCase();
-
-  if (/^(hi|hello|hey|salam|assalamualaikum|asalam o alaikum)[!. ]*$/.test(text)) {
-    return "Hi! 👋 Main BizAI hoon, tumhara business advisor. Batao, main tumhari kis tarah help kar sakta hoon?";
-  }
-
-  if (/^(how are you|how r u)[?!. ]*$/.test(text)) {
-    return "Main bilkul ready hoon tumhari help ke liye! 😊 Batao, business ke liye kya plan hai?";
-  }
-
-  return null;
-}
+// Allow image uploads in JSON requests
+app.use(express.json({ limit: "12mb" }));
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const message = req.body?.message;
+    const { message, image, mimeType } = req.body || {};
 
-    if (typeof message !== "string" || !message.trim()) {
-      return res.status(400).json({ error: "Yaar, pehle apna message likho." });
-    }
-
-    if (message.length > 4000) {
-      return res.status(400).json({ error: "Message 4000 characters se chhota rakho." });
-    }
-
-    const greeting = getGreeting(message);
-    if (greeting) {
-      return res.json({ reply: greeting });
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error("GEMINI_API_KEY is missing.");
+    if (!API_KEY) {
       return res.status(500).json({
-        error: "AI setup complete nahi hai. Vercel environment variables check karo."
+        error: "GEMINI_API_KEY .env file mein nahi mili."
       });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    if (!message?.trim() && !image) {
+      return res.status(400).json({
+        error: "Sawal likho ya tasveer upload karo."
+      });
+    }
 
-    const prompt = `
-You are BizAI, a friendly and practical AI business advisor.
+    const parts = [];
 
-Rules:
-- Reply in the same language and script the user uses.
-- If the user writes Roman Urdu or Roman English, reply in Roman Urdu/Roman English using Latin letters.
-- If the user writes in English, reply in English.
-- Keep answers clear, friendly, and useful.
-- Give practical business ideas, marketing tips, and step-by-step guidance.
-- Never guarantee profits or invent facts.
+    if (image) {
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ];
 
-User message:
-${message.trim()}
-`;
+      const type = mimeType || "image/jpeg";
 
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: prompt
+      if (!allowedTypes.includes(type)) {
+        return res.status(400).json({
+          error: "JPG, PNG ya WEBP tasveer upload karo."
+        });
+      }
+
+      parts.push({
+        inline_data: {
+          mime_type: type,
+          data: image
+        }
+      });
+    }
+
+    const question = message?.trim() ||
+      "Tasveer mein kya likha hai? Text parh kar samjhao.";
+
+    parts.push({
+      text: [
+        "You are Bizvanta AI, a helpful assistant.",
+        "Answer in the same language as the user's question.",
+        "If an image is attached, inspect it carefully.",
+        "Read visible text and explain it when requested.",
+        "Do not invent text that is blurry or unreadable.",
+        "For unclear medicine names or dosages, ask the user to consult a pharmacist or doctor.",
+        "User's question: " + question
+      ].join("\n")
     });
 
-    const reply = response?.text?.trim();
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048
+        }
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API error:", data);
+
+      return res.status(502).json({
+        error: data.error?.message ||
+          "Gemini API request fail hui."
+      });
+    }
+
+    const reply = data.candidates?.[0]?.content?.parts
+      ?.map(part => part.text || "")
+      .join("\n")
+      .trim();
 
     if (!reply) {
       return res.status(502).json({
-        error: "AI ka response khaali aaya. Dobara try karo."
+        error: "AI ka jawab nahi mila. Dobara koshish karo."
       });
     }
 
     return res.json({ reply });
-
   } catch (error) {
-    console.error("BizAI error:", {
-      status: error?.status,
-      message: error?.message
-    });
-
-    const status = Number(error?.status || error?.code);
-
-    if (status === 429) {
-      return res.status(429).json({
-        error: "AI usage limit poori ho gayi. Thori dair baad try karo."
-      });
-    }
-
-    if (status === 401 || status === 403) {
-      return res.status(502).json({
-        error: "AI API key ya access mein masla hai. Vercel settings check karo."
-      });
-    }
-
-    if (status === 503 || status === 500) {
-      return res.status(503).json({
-        error: "Yaar, AI service filhal busy hai. Thori dair baad dobara try karo."
-      });
-    }
+    console.error("Chat error:", error);
 
     return res.status(500).json({
-      error: "BizAI abhi jawab nahi de saka. Vercel logs check karne honge."
+      error: "Server request complete nahi kar saka."
     });
   }
 });
 
+// Unknown API routes return JSON errors
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    error: "API route nahi mila."
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`BizAI running on port ${PORT}`);
+  console.log(`Bizvanta AI running at http://localhost:${PORT}`);
+  console.log(`Gemini API key found: ${Boolean(API_KEY)}`);
+  console.log(`Chat model: ${MODEL}`);
 });
