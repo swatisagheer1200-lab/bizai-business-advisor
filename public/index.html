@@ -1,985 +1,140 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#ffffff">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Visionta AI</title>
-
 <style>
-:root {
-  --sidebar: #f7f7f8;
-  --text: #202123;
-  --muted: #777;
-  --border: #e5e5e5;
-  --accent: #10a37f;
-  --hover: #ececec;
-  --user: #f4f4f4;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-               Arial, sans-serif;
-  color: var(--text);
-  background: white;
-}
-button, textarea, input { font: inherit; }
-button { cursor: pointer; }
-button:focus-visible, textarea:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.app { display: flex; height: 100dvh; overflow: hidden; }
-
-/* Sidebar */
-.sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: var(--sidebar);
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  border-right: 1px solid var(--border);
-  transition: transform .2s ease;
-  z-index: 20;
-}
-.brand-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 5px 20px;
-}
-.brand {
-  font-size: 21px;
-  font-weight: 750;
-  letter-spacing: -.8px;
-}
-.brand span { color: var(--accent); }
-.icon-btn {
-  border: 0;
-  background: transparent;
-  border-radius: 9px;
-  min-width: 38px;
-  min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text);
-  font-size: 20px;
-}
-.icon-btn:hover { background: var(--hover); }
-.side-btn {
-  width: 100%;
-  text-align: left;
-  border: 0;
-  background: transparent;
-  border-radius: 9px;
-  padding: 11px 10px;
-  margin-bottom: 5px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-size: 14px;
-}
-.side-btn:hover, .history-item:hover { background: var(--hover); }
-.side-btn.primary { background: white; border: 1px solid var(--border); }
-.side-heading {
-  font-size: 12px;
-  color: var(--muted);
-  padding: 20px 9px 8px;
-}
-.history {
-  overflow-y: auto;
-  flex: 1;
-  min-height: 80px;
-}
-.history-item {
-  border: 0;
-  background: transparent;
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-}
-.history-item.active { background: #e8e8e8; }
-.history-title {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.delete-chat {
-  border: 0;
-  background: transparent;
-  color: #888;
-  padding: 2px 5px;
-  border-radius: 5px;
-}
-.delete-chat:hover { background: #ddd; color: #222; }
-.profile {
-  border-top: 1px solid var(--border);
-  padding: 13px 5px 5px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-}
-.avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  display: grid; place-items: center;
-  color: white; background: #147d64;
-  font-weight: 700;
-}
-
-/* Main chat */
-.main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  position: relative;
-}
-.topbar {
-  height: 54px;
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  background: rgba(255,255,255,.94);
-  z-index: 5;
-}
-.top-left { display: flex; align-items: center; gap: 8px; }
-.mobile-brand { display: none; font-weight: 750; font-size: 18px; }
-.model-label {
-  border: 0; background: transparent; font-size: 15px;
-  padding: 8px; border-radius: 8px;
-}
-.model-label:hover { background: var(--sidebar); }
-.status { font-size: 12px; color: var(--muted); }
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px 20px 32px;
-  scroll-behavior: smooth;
-}
-.message-list {
-  max-width: 800px;
-  width: 100%;
-  margin: 0 auto;
-}
-.message {
-  display: flex;
-  gap: 13px;
-  margin: 0 auto 27px;
-  align-items: flex-start;
-}
-.message .avatar {
-  flex-shrink: 0;
-  width: 32px; height: 32px;
-  font-size: 12px;
-}
-.message-content {
-  min-width: 0;
-  flex: 1;
-  line-height: 1.72;
-  font-size: 15px;
-  overflow-wrap: anywhere;
-  padding-top: 3px;
-}
-.message-content p { margin: 0 0 12px; }
-.message-content pre {
-  background: #f5f5f5;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 13px;
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-.message-content code {
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-}
-.message-content img {
-  display: block;
-  max-width: min(100%, 420px);
-  max-height: 320px;
-  object-fit: contain;
-  border-radius: 12px;
-  margin: 8px 0 12px;
-  border: 1px solid var(--border);
-}
-.message-actions { display: flex; gap: 5px; margin-top: 9px; }
-.message-actions button {
-  border: 0; background: transparent; color: #777;
-  padding: 5px 7px; border-radius: 6px; font-size: 12px;
-}
-.message-actions button:hover { background: var(--hover); color: #222; }
-
-.welcome {
-  max-width: 800px;
-  margin: auto;
-  padding: 28px 16px 35px;
-  text-align: center;
-}
-.welcome h1 { font-size: clamp(26px, 4vw, 34px); margin: 0 0 9px; }
-.welcome p { color: var(--muted); font-size: 14px; margin: 0 0 26px; }
-.suggestions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 auto;
-  max-width: 650px;
-}
-.suggestion {
-  text-align: left;
-  border: 1px solid var(--border);
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-  min-height: 76px;
-}
-.suggestion:hover { background: #fafafa; border-color: #bbb; }
-.suggestion strong { display: block; font-size: 13px; margin-bottom: 5px; }
-.suggestion span { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
-
-.composer-area {
-  padding: 8px 18px 12px;
-  background: white;
-}
-.composer-wrap { max-width: 800px; margin: 0 auto; }
-.attachment-preview {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0 12px;
-}
-.attachment-preview img {
-  width: 62px; height: 62px; object-fit: cover;
-  border-radius: 10px; border: 1px solid var(--border);
-}
-.attachment-preview .file-info { font-size: 12px; color: var(--muted); flex: 1; }
-.composer {
-  border: 1px solid #d9d9d9;
-  border-radius: 25px;
-  padding: 9px 10px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0,0,0,.04);
-}
-.composer:focus-within { border-color: #bbb; }
-.composer textarea {
-  border: 0; outline: none; resize: none;
-  background: transparent; width: 100%;
-  max-height: 180px; min-height: 30px;
-  padding: 6px 8px;
-  font-size: 15px; line-height: 1.5;
-}
-.composer textarea:focus { outline: none; }
-.composer-bottom {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 6px;
-}
-.tools-left, .tools-right { display: flex; align-items: center; gap: 4px; }
-.tool-btn {
-  border: 0; background: transparent; border-radius: 50%;
-  width: 36px; height: 36px;
-  display: grid; place-items: center;
-  font-size: 20px; color: #333;
-}
-.tool-btn:hover { background: var(--hover); }
-.tool-btn.listening { background: #ffe6e6; color: #c22; }
-.send-btn {
-  border: 0; border-radius: 50%; width: 37px; height: 37px;
-  display: grid; place-items: center;
-  color: white; background: #202123; font-size: 18px;
-}
-.send-btn:disabled { opacity: .35; cursor: not-allowed; }
-.disclaimer {
-  color: #858585; font-size: 11px; text-align: center;
-  padding: 9px 4px 0; line-height: 1.5;
-}
-.topic-select {
-  max-width: 150px; border: 0; background: transparent;
-  color: #777; font-size: 12px; padding: 5px;
-}
-.loading-dots { color: #777; }
-.error-box {
-  background: #fff4f4; color: #a22;
-  border: 1px solid #f2d4d4; border-radius: 10px;
-  padding: 10px 12px; font-size: 13px;
-}
-.overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.35); z-index: 15;
-}
-.overlay.show { display: block; }
-
-@media (max-width: 760px) {
-  .sidebar {
-    position: fixed; inset: 0 auto 0 0;
-    width: 285px; min-width: 285px;
-    transform: translateX(-105%);
-    box-shadow: none;
-  }
-  .sidebar.open { transform: translateX(0); box-shadow: 8px 0 35px rgba(0,0,0,.1); }
-  .mobile-brand { display: inline; }
-  .topbar { padding: 0 9px; }
-  .messages { padding: 18px 13px 20px; }
-  .welcome { padding: 26px 4px 22px; }
-  .welcome h1 { font-size: 27px; }
-  .suggestions { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .suggestion { padding: 12px 10px; min-height: 82px; }
-  .composer-area { padding: 6px 9px max(9px, env(safe-area-inset-bottom)); }
-  .composer { border-radius: 22px; padding: 7px; }
-  .composer textarea { font-size: 16px; padding: 6px; }
-  .topic-select { max-width: 110px; }
-  .message { gap: 9px; margin-bottom: 23px; }
-  .message-content { font-size: 14px; }
-  .status { display: none; }
-}
-@media (max-width: 380px) {
-  .suggestions { grid-template-columns: 1fr; }
-  .suggestion { min-height: 60px; }
-  .topic-select { display: none; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;color:#202123}
+button,textarea,select{font:inherit}
+.app{display:flex;height:100dvh}
+aside{width:255px;background:#f7f7f8;padding:15px;display:flex;flex-direction:column}
+.brand{font-size:23px;font-weight:bold;padding:10px 5px 25px}
+.brand span{color:#10a37f}
+button{cursor:pointer}
+.side{width:100%;text-align:left;padding:12px;border:0;background:transparent;border-radius:9px}
+.side:hover,.suggest:hover{background:#e9e9e9}
+.history{flex:1;overflow:auto;margin-top:15px}
+.chatname{display:flex;align-items:center}
+.chatname button:first-child{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+header{height:55px;padding:10px 18px;display:flex;align-items:center;gap:12px}
+#menu{display:none}
+#scroll{flex:1;overflow:auto;padding:20px}
+#welcome{max-width:650px;margin:70px auto 30px;text-align:center}
+h1{font-size:32px}
+.suggestions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.suggest{background:white;border:1px solid #ddd;border-radius:12px;padding:15px;text-align:left}
+.suggest b,.suggest span{display:block;margin-bottom:6px}
+.suggest span{font-size:12px;color:#777}
+.messages{max-width:780px;margin:auto}
+.msg{display:flex;gap:12px;margin:25px 0;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.avatar{background:#10a37f;color:white;border-radius:50%;width:30px;height:30px;flex-shrink:0;display:grid;place-items:center}
+.msgbody{flex:1;min-width:0}
+.msg img{max-width:100%;max-height:350px;display:block;border-radius:12px;margin-bottom:10px}
+.composer-area{padding:10px 18px 14px}
+.composer{max-width:780px;margin:auto;border:1px solid #ddd;border-radius:24px;padding:10px}
+textarea{width:100%;border:0;outline:0;resize:none;max-height:150px;font-size:16px;padding:5px}
+.controls{display:flex;align-items:center;gap:6px}
+.controls button{border:0;background:transparent;border-radius:50%;width:36px;height:36px}
+.controls button:hover{background:#eee}
+.controls select{max-width:145px;border:0;color:#777}
+#send{margin-left:auto;background:#202123;color:white;font-size:20px}
+#send:disabled{opacity:.4}
+#preview{display:none;max-width:780px;margin:0 auto 8px;align-items:center;gap:10px}
+#preview img{width:60px;height:60px;object-fit:cover;border-radius:8px}
+#preview span{flex:1}
+.note{text-align:center;color:#888;font-size:11px;margin-top:8px}
+.overlay{display:none}
+@media(max-width:700px){
+aside{position:fixed;z-index:5;inset:0 auto 0 0;transform:translateX(-110%);transition:.2s}
+aside.open{transform:translateX(0)}
+#menu{display:inline-block}
+.overlay.show{display:block;position:fixed;inset:0;background:#0005;z-index:4}
+#scroll{padding:12px}
+#welcome{margin:35px auto 20px}
+h1{font-size:27px}
+.composer-area{padding:8px}
+.suggestions{gap:7px}
+.suggest{padding:11px}
 }
 </style>
 </head>
-
 <body>
+<div class="overlay" id="overlay"></div>
 <div class="app">
-  <div class="overlay" id="overlay"></div>
-
-  <aside class="sidebar" id="sidebar">
-    <div class="brand-row">
-      <div class="brand">Visionta <span>AI</span></div>
-      <button class="icon-btn" id="closeSidebar" aria-label="Close sidebar">✕</button>
-    </div>
-
-    <button class="side-btn primary" id="newChat"><span>＋</span> New chat</button>
-    <button class="side-btn" id="searchHistory"><span>⌕</span> Search chats</button>
-
-    <div class="side-heading">Explore</div>
-    <button class="side-btn topic-btn" data-topic="Images">▧ Images</button>
-    <button class="side-btn topic-btn" data-topic="Study & Learning">▤ Study & Learning</button>
-    <button class="side-btn topic-btn" data-topic="Writing & Translation">✎ Writing & Translation</button>
-    <button class="side-btn topic-btn" data-topic="Everyday Help">◉ Everyday Help</button>
-    <button class="side-btn topic-btn" data-topic="Planning">☷ Planning</button>
-    <button class="side-btn topic-btn" data-topic="Business Advisor">▦ Business Advisor</button>
-    <button class="side-btn topic-btn" data-topic="Marketing & Sales">↗ Marketing & Sales</button>
-
-    <div class="side-heading">Recent chats</div>
-    <div class="history" id="history"></div>
-
-    <div class="profile">
-      <div class="avatar">V</div>
-      <div><strong>Visionta AI</strong><br><span style="color:#888">AI Assistant</span></div>
-    </div>
-  </aside>
-
-  <main class="main">
-    <header class="topbar">
-      <div class="top-left">
-        <button class="icon-btn" id="openSidebar" aria-label="Open menu">☰</button>
-        <span class="mobile-brand">Visionta AI</span>
-        <button class="model-label" id="modelButton">Visionta <span style="color:#888">⌄</span></button>
-      </div>
-      <div class="status">AI assistant</div>
-    </header>
-
-    <section class="messages" id="messages">
-      <div class="welcome" id="welcome">
-        <h1>What can I help with?</h1>
-        <p>Ask anything. Let's work through it together.</p>
-        <div class="suggestions">
-          <button class="suggestion" data-prompt="Help me brainstorm some creative ideas.">
-            <strong>✦ Brainstorm ideas</strong>
-            <span>Explore ideas and possibilities</span>
-          </button>
-          <button class="suggestion" data-prompt="Explain this topic step by step in simple language.">
-            <strong>▤ Learn something</strong>
-            <span>Understand a difficult topic</span>
-          </button>
-          <button class="suggestion" data-prompt="Help me write a clear and professional message.">
-            <strong>✎ Write something</strong>
-            <span>Draft, improve or translate text</span>
-          </button>
-          <button class="suggestion" data-prompt="Give me a practical business idea and a step-by-step plan.">
-            <strong>↗ Build a business</strong>
-            <span>Ideas, marketing and planning</span>
-          </button>
-        </div>
-      </div>
-      <div class="message-list" id="messageList"></div>
-    </section>
-
-    <section class="composer-area">
-      <div class="composer-wrap">
-        <div class="attachment-preview" id="attachmentPreview">
-          <img id="previewImage" alt="Selected image preview">
-          <div class="file-info" id="fileInfo">Image attached</div>
-          <button class="icon-btn" id="removeImage" aria-label="Remove image">✕</button>
-        </div>
-
-        <div class="composer">
-          <textarea id="messageInput" rows="1" placeholder="Message Visionta AI"></textarea>
-          <div class="composer-bottom">
-            <div class="tools-left">
-              <button class="tool-btn" id="attachButton" aria-label="Attach image" title="Add image">＋</button>
-              <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp" hidden>
-              <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-              <button class="tool-btn" id="cameraButton" aria-label="Take photo" title="Camera">▣</button>
-              <button class="tool-btn" id="voiceButton" aria-label="Voice typing" title="Voice typing">🎙</button>
-              <select class="topic-select" id="topicSelect" aria-label="Choose topic">
-                <option value="Everyday Help">Everyday Help</option>
-                <option value="Images">Images</option>
-                <option value="Study & Learning">Study & Learning</option>
-                <option value="Writing & Translation">Writing & Translation</option>
-                <option value="Planning">Planning</option>
-                <option value="Business Advisor">Business Advisor</option>
-                <option value="Marketing & Sales">Marketing & Sales</option>
-              </select>
-            </div>
-            <div class="tools-right">
-              <button class="send-btn" id="sendButton" aria-label="Send message" disabled>↑</button>
-            </div>
-          </div>
-        </div>
-        <div class="disclaimer">Visionta AI can make mistakes. Check important information.</div>
-      </div>
-    </section>
-  </main>
+<aside id="sidebar">
+<div class="brand">Visionta <span>AI</span></div>
+<button class="side" id="new">＋ New chat</button>
+<button class="side" id="search">⌕ Search chats</button>
+<p style="font-size:12px;color:#777">Explore</p>
+<button class="side topicbtn" data-topic="Images">▧ Images</button>
+<button class="side topicbtn" data-topic="Study & Learning">▤ Study & Learning</button>
+<button class="side topicbtn" data-topic="Writing & Translation">✎ Writing & Translation</button>
+<button class="side topicbtn" data-topic="Everyday Help">◉ Everyday Help</button>
+<button class="side topicbtn" data-topic="Business Advisor">▦ Business Advisor</button>
+<p style="font-size:12px;color:#777">Recent chats</p>
+<div class="history" id="history"></div>
+<div style="border-top:1px solid #ddd;padding:15px 5px">● Visionta AI</div>
+</aside>
+<main>
+<header>
+<button id="menu" style="border:0;background:white;font-size:22px">☰</button>
+<strong>Visionta AI</strong>
+</header>
+<div id="scroll">
+<div id="welcome">
+<h1>What can I help with?</h1>
+<p style="color:#777">Ask anything. Let's work through it together.</p>
+<div class="suggestions">
+<button class="suggest" data-prompt="Help me brainstorm creative ideas."><b>✦ Brainstorm ideas</b><span>Explore new possibilities</span></button>
+<button class="suggest" data-prompt="Explain this topic step by step."><b>▤ Learn something</b><span>Understand a difficult topic</span></button>
+<button class="suggest" data-prompt="Help me write a professional message."><b>✎ Write something</b><span>Draft or improve text</span></button>
+<button class="suggest" data-prompt="Give me a business idea and practical plan."><b>↗ Business ideas</b><span>Plan your next steps</span></button>
 </div>
-
+</div>
+<div class="messages" id="messages"></div>
+</div>
+<div class="composer-area">
+<div id="preview"><img id="previewImg" alt="Preview"><span>Image ready</span><button id="remove">✕</button></div>
+<div class="composer">
+<textarea id="input" rows="1" placeholder="Message Visionta AI"></textarea>
+<div class="controls">
+<button id="attach" title="Add image">＋</button>
+<input type="file" id="file" accept="image/jpeg,image/png,image/webp" hidden>
+<button id="camera" title="Camera">▣</button>
+<input type="file" id="cameraFile" accept="image/*" capture="environment" hidden>
+<button id="voice" title="Voice typing">🎙</button>
+<select id="topic">
+<option>Everyday Help</option><option>Images</option><option>Study & Learning</option><option>Writing & Translation</option><option>Business Advisor</option>
+</select>
+<button id="send" disabled>↑</button>
+</div>
+</div>
+<div class="note">Visionta AI can make mistakes. Check important information.</div>
+</div>
+</main>
+</div>
 <script>
-(() => {
-  "use strict";
-
-  const $ = (id) => document.getElementById(id);
-  const STORAGE_KEY = "visionta_chat_history_v1";
-  const OLD_STORAGE_KEY = "bizvanta_chat_history_v2";
-
-  let chats = [];
-  let activeChatId = null;
-  let pendingImage = null;
-  let isSending = false;
-  let recognition = null;
-
-  function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  }
-
-  function safeLoad() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const old = localStorage.getItem(OLD_STORAGE_KEY);
-      const parsed = JSON.parse(saved || old || "[]");
-      chats = Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      chats = [];
-    }
-
-    chats = chats.map(chat => ({
-      id: chat.id || uid(),
-      title: chat.title || "New chat",
-      topic: chat.topic || "Everyday Help",
-      updatedAt: chat.updatedAt || Date.now(),
-      messages: Array.isArray(chat.messages) ? chat.messages : []
-    }));
-
-    if (chats.length) {
-      const latest = [...chats].sort((a, b) => b.updatedAt - a.updatedAt)[0];
-      activeChatId = latest.id;
-    }
-  }
-
-  function saveChats() {
-    try {
-      // Keep recent conversations to reduce browser storage problems.
-      const ordered = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(ordered.slice(0, 30)));
-    } catch (error) {
-      console.warn("Visionta AI could not save all chat history.", error);
-    }
-  }
-
-  function activeChat() {
-    return chats.find(chat => chat.id === activeChatId) || null;
-  }
-
-  function createChat(topic = "Everyday Help") {
-    const chat = {
-      id: uid(),
-      title: "New chat",
-      topic,
-      updatedAt: Date.now(),
-      messages: []
-    };
-    chats.unshift(chat);
-    activeChatId = chat.id;
-    saveChats();
-    clearPendingImage();
-    $("topicSelect").value = topic;
-    renderHistory();
-    renderMessages();
-    closeSidebar();
-    $("messageInput").focus();
-  }
-
-  function renderHistory(filter = "") {
-    const container = $("history");
-    container.replaceChildren();
-
-    const query = filter.toLowerCase();
-    const ordered = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
-    const filtered = ordered.filter(chat => {
-      const text = chat.title + " " + chat.messages.map(m => m.text || "").join(" ");
-      return text.toLowerCase().includes(query);
-    });
-
-    if (!filtered.length) {
-      const empty = document.createElement("div");
-      empty.style.cssText = "padding:12px 9px;color:#888;font-size:12px";
-      empty.textContent = query ? "No matching chats" : "Your chats will appear here.";
-      container.appendChild(empty);
-      return;
-    }
-
-    filtered.forEach(chat => {
-      const row = document.createElement("div");
-      row.className = "history-item" + (chat.id === activeChatId ? " active" : "");
-
-      const title = document.createElement("button");
-      title.className = "history-title";
-      title.style.cssText = "flex:1;min-width:0;text-align:left;border:0;background:transparent;cursor:pointer;color:inherit";
-      title.textContent = chat.title;
-      title.addEventListener("click", () => openChat(chat.id));
-
-      const del = document.createElement("button");
-      del.className = "delete-chat";
-      del.textContent = "×";
-      del.title = "Delete chat";
-      del.setAttribute("aria-label", "Delete chat");
-      del.addEventListener("click", event => {
-        event.stopPropagation();
-        if (!confirm("Delete this conversation?")) return;
-        chats = chats.filter(c => c.id !== chat.id);
-        if (activeChatId === chat.id) activeChatId = chats[0]?.id || null;
-        saveChats();
-        renderHistory();
-        renderMessages();
-      });
-
-      row.append(title, del);
-      container.appendChild(row);
-    });
-  }
-
-  function openChat(id) {
-    activeChatId = id;
-    const chat = activeChat();
-    if (chat) $("topicSelect").value = chat.topic || "Everyday Help";
-    clearPendingImage();
-    renderHistory();
-    renderMessages();
-    closeSidebar();
-  }
-
-  function renderMessages() {
-    const list = $("messageList");
-    list.replaceChildren();
-    const chat = activeChat();
-    $("welcome").style.display = chat && chat.messages.length ? "none" : "block";
-
-    if (!chat) return;
-
-    chat.messages.forEach((message, index) => {
-      const row = document.createElement("div");
-      row.className = "message";
-
-      const avatar = document.createElement("div");
-      avatar.className = "avatar";
-      avatar.textContent = message.role === "user" ? "Y" : "V";
-      if (message.role === "user") avatar.style.background = "#777";
-
-      const content = document.createElement("div");
-      content.className = "message-content";
-
-      if (message.imageUrl) {
-        const img = document.createElement("img");
-        img.src = message.imageUrl;
-        img.alt = "Attached image";
-        img.loading = "lazy";
-        content.appendChild(img);
-      }
-
-      const text = document.createElement("div");
-      text.style.whiteSpace = "pre-wrap";
-      text.textContent = message.text || (message.imageUrl ? "" : "");
-      content.appendChild(text);
-
-      if (message.role === "assistant" && message.text) {
-        const actions = document.createElement("div");
-        actions.className = "message-actions";
-
-        const copy = document.createElement("button");
-        copy.textContent = "Copy";
-        copy.addEventListener("click", async () => {
-          try {
-            await navigator.clipboard.writeText(message.text);
-            copy.textContent = "Copied";
-            setTimeout(() => copy.textContent = "Copy", 1200);
-          } catch {
-            alert("Copy is not available in this browser.");
-          }
-        });
-
-        actions.appendChild(copy);
-        content.appendChild(actions);
-      }
-
-      row.append(avatar, content);
-      list.appendChild(row);
-    });
-
-    if (isSending) {
-      const row = document.createElement("div");
-      row.className = "message";
-      const avatar = document.createElement("div");
-      avatar.className = "avatar";
-      avatar.textContent = "V";
-      const text = document.createElement("div");
-      text.className = "message-content loading-dots";
-      text.textContent = "Visionta AI is thinking...";
-      row.append(avatar, text);
-      list.appendChild(row);
-    }
-
-    $("messages").scrollTop = $("messages").scrollHeight;
-  }
-
-  function addMessage(role, text, imageUrl = null) {
-    const chat = activeChat();
-    if (!chat) return;
-
-    chat.messages.push({
-      role,
-      text: text || "",
-      imageUrl: imageUrl || null,
-      time: Date.now()
-    });
-
-    if (role === "user" && chat.title === "New chat") {
-      const titleText = (text || "Image conversation").trim();
-      chat.title = titleText.slice(0, 42) + (titleText.length > 42 ? "…" : "");
-    }
-
-    chat.updatedAt = Date.now();
-    saveChats();
-    renderHistory();
-    renderMessages();
-  }
-
-  function openSidebar() {
-    $("sidebar").classList.add("open");
-    $("overlay").classList.add("show");
-  }
-  function closeSidebar() {
-    $("sidebar").classList.remove("open");
-    $("overlay").classList.remove("show");
-  }
-
-  function clearPendingImage() {
-    pendingImage = null;
-    $("imageInput").value = "";
-    $("cameraInput").value = "";
-    $("attachmentPreview").style.display = "none";
-    $("previewImage").removeAttribute("src");
-    updateSendButton();
-  }
-
-  function updateSendButton() {
-    $("sendButton").disabled =
-      isSending || (!$("messageInput").value.trim() && !pendingImage);
-  }
-
-  function resizeTextarea() {
-    const input = $("messageInput");
-    input.style.height = "auto";
-    input.style.height = Math.min(input.scrollHeight, 180) + "px";
-  }
-
-  function fileToDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Image could not be read."));
-      reader.readAsDataURL(file);
-    });
-  }
-
-  async function compressImage(file) {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      throw new Error("Please choose a JPG, PNG or WEBP image.");
-    }
-
-    const source = await fileToDataUrl(file);
-    const img = new Image();
-
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = () => reject(new Error("This image could not be opened."));
-      img.src = source;
-    });
-
-    const maxSide = 1000;
-    const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(img.width * ratio));
-    canvas.height = Math.max(1, Math.round(img.height * ratio));
-
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    // JPEG compression helps keep the request small enough for hosting limits.
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.72);
-    const base64 = dataUrl.split(",")[1];
-
-    if (base64.length > 2_700_000) {
-      throw new Error("This image is still too large. Please choose a smaller image.");
-    }
-
-    return { dataUrl, base64, mimeType: "image/jpeg" };
-  }
-
-  async function handleImage(file) {
-    if (!file) return;
-
-    try {
-      $("fileInfo").textContent = "Preparing image...";
-      $("attachmentPreview").style.display = "flex";
-      const result = await compressImage(file);
-      pendingImage = result;
-      $("previewImage").src = result.dataUrl;
-      $("fileInfo").textContent = "Image ready to send";
-      updateSendButton();
-    } catch (error) {
-      clearPendingImage();
-      alert(error.message || "Could not prepare this image.");
-    }
-  }
-
-  async function sendMessage() {
-    if (isSending) return;
-
-    const text = $("messageInput").value.trim();
-    const image = pendingImage;
-    if (!text && !image) return;
-
-    if (!activeChat()) createChat($("topicSelect").value);
-    const chat = activeChat();
-    const topic = $("topicSelect").value;
-
-    // Send the latest image again on follow-up turns so the model can refer to it.
-    let imageForRequest = image;
-    if (!imageForRequest) {
-      const previousImage = [...chat.messages].reverse().find(m => m.role === "user" && m.imageBase64);
-      if (previousImage) {
-        imageForRequest = {
-          base64: previousImage.imageBase64,
-          mimeType: previousImage.mimeType || "image/jpeg",
-          dataUrl: previousImage.imageUrl
-        };
-      }
-    }
-
-    $("messageInput").value = "";
-    resizeTextarea();
-    clearPendingImage();
-
-    const userMessage = {
-      role: "user",
-      text,
-      imageUrl: image ? image.dataUrl : null,
-      imageBase64: image ? image.base64 : null,
-      mimeType: image ? image.mimeType : null,
-      time: Date.now()
-    };
-
-    chat.messages.push(userMessage);
-    if (chat.title === "New chat") {
-      const titleText = text || "Image conversation";
-      chat.title = titleText.slice(0, 42) + (titleText.length > 42 ? "…" : "");
-    }
-    chat.topic = topic;
-    chat.updatedAt = Date.now();
-    saveChats();
-    renderHistory();
-
-    isSending = true;
-    updateSendButton();
-    renderMessages();
-
-    try {
-      const body = {
-        message: text,
-        topic,
-        image: imageForRequest ? imageForRequest.base64 : null,
-        mimeType: imageForRequest ? imageForRequest.mimeType : null
-      };
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error("Server returned an invalid response. Please try again.");
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || `Request failed (${response.status}).`);
-      }
-
-      const reply = data.reply ?? data.response ?? data.text ?? data.message;
-      if (!reply) throw new Error("AI returned an empty answer. Please try again.");
-
-      chat.messages.push({
-        role: "assistant",
-        text: String(reply),
-        time: Date.now()
-      });
-      chat.updatedAt = Date.now();
-      saveChats();
-    } catch (error) {
-      chat.messages.push({
-        role: "assistant",
-        text: "I couldn't complete that request.\n\n" +
-          (error.message || "Please try again in a moment.") +
-          "\n\nIf this keeps happening, check your Vercel deployment logs and Gemini API status.",
-        time: Date.now(),
-        isError: true
-      });
-      saveChats();
-    } finally {
-      isSending = false;
-      updateSendButton();
-      renderHistory();
-      renderMessages();
-      $("messageInput").focus();
-    }
-  }
-
-  function setupVoice() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice typing is not supported in this browser. Try Chrome or Edge.");
-      return;
-    }
-
-    if (recognition) {
-      recognition.stop();
-      return;
-    }
-
-    recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = navigator.language || "en-US";
-
-    $("voiceButton").classList.add("listening");
-    $("voiceButton").textContent = "●";
-
-    recognition.onresult = event => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      $("messageInput").value = transcript;
-      resizeTextarea();
-      updateSendButton();
-    };
-
-    recognition.onerror = () => {};
-    recognition.onend = () => {
-      recognition = null;
-      $("voiceButton").classList.remove("listening");
-      $("voiceButton").textContent = "🎙";
-    };
-
-    recognition.start();
-  }
-
-  $("newChat").addEventListener("click", () => createChat());
-  $("openSidebar").addEventListener("click", openSidebar);
-  $("closeSidebar").addEventListener("click", closeSidebar);
-  $("overlay").addEventListener("click", closeSidebar);
-
-  $("attachButton").addEventListener("click", () => $("imageInput").click());
-  $("cameraButton").addEventListener("click", () => $("cameraInput").click());
-  $("imageInput").addEventListener("change", event => handleImage(event.target.files[0]));
-  $("cameraInput").addEventListener("change", event => handleImage(event.target.files[0]));
-  $("removeImage").addEventListener("click", clearPendingImage);
-  $("voiceButton").addEventListener("click", setupVoice);
-  $("sendButton").addEventListener("click", sendMessage);
-
-  $("messageInput").addEventListener("input", () => {
-    resizeTextarea();
-    updateSendButton();
-  });
-
-  $("messageInput").addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-
-  document.querySelectorAll(".suggestion").forEach(button => {
-    button.addEventListener("click", () => {
-      $("messageInput").value = button.dataset.prompt || "";
-      resizeTextarea();
-      updateSendButton();
-      $("messageInput").focus();
-    });
-  });
-
-  document.querySelectorAll(".topic-btn").forEach(button => {
-    button.addEventListener("click", () => {
-      const topic = button.dataset.topic;
-      $("topicSelect").value = topic;
-      createChat(topic);
-    });
-  });
-
-  $("searchHistory").addEventListener("click", () => {
-    const query = prompt("Search your chat history:");
-    if (query !== null) renderHistory(query.trim());
-  });
-
-  $("modelButton").addEventListener("click", () => {
-    alert("Visionta AI\nYour personal AI assistant, powered by your configured Gemini backend.");
-  });
-
-  safeLoad();
-  if (!activeChatId) createChat();
-  else {
-    renderHistory();
-    renderMessages();
-    const chat = activeChat();
-    if (chat) $("topicSelect").value = chat.topic || "Everyday Help";
-  }
-  updateSendButton();
-})();
+const $=id=>document.getElementById(id);
+let chats=[],active=null,pending=null,busy=false,recognition=null;
+const KEY="visionta_history_v1";
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function current(){return chats.find(c=>c.id===active)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(chats.slice(0,20)))}catch(e){chats.forEach(c=>c.messages.forEach(m=>delete m.imageBase64));try{localStorage.setItem(KEY,JSON.stringify(chats.slice(0,10)))}catch{}}}
+function newChat(topic="Everyday Help"){let c={id:uid(),title:"New chat",topic,messages:[],updatedAt:Date.now()};chats.unshift(c);active=c.id;clearImage();$("topic").value=topic;save();render();closeMenu()}
+function renderHistory(filter=""){let box=$("history");box.replaceChildren();chats.filter(c=>(c.title+" "+c.messages.map(m=>m.text).join(" ")).toLowerCase().includes(filter.toLowerCase())).forEach(c=>{let row=document.createElement("div");row.className="chatname";let b=document.createElement("button");b.className="side";b.textContent=c.title;b.onclick=()=>{active=c.id;clearImage();$("topic").value=c.topic;render();closeMenu()};let d=document.createElement("button");d.textContent="×";d.style.border="0";d.onclick=()=>{chats=chats.filter(x=>x.id!==c.id);if(active===c.id)active=chats[0]?.id||null;save();render()};row.append(b,d);box.append(row)})}
+function render(){renderHistory();let c=current();$("welcome").style.display=c&&c.messages.length?"none":"block";let box=$("messages");box.replaceChildren();if(!c)return;c.messages.forEach(m=>{let row=document.createElement("div");row.className="msg";let av=document.createElement("div");av.className="avatar";av.textContent=m.role==="user"?"Y":"V";let body=document.createElement("div");body.className="msgbody";if(m.imageUrl){let im=document.createElement("img");im.src=m.imageUrl;im.alt="Uploaded image";body.append(im)}let t=document.createElement("div");t.textContent=m.text||"";body.append(t);if(m.role==="assistant"){let cp=document.createElement("button");cp.textContent="Copy";cp.style.cssText="margin-top:8px;border:0;background:white;color:#777";cp.onclick=()=>navigator.clipboard?.writeText(m.text);body.append(cp)}row.append(av,body);box.append(row)});if(busy){let r=document.createElement("div");r.className="msg";r.textContent="Visionta AI is thinking…";box.append(r)}$("scroll").scrollTop=$("scroll").scrollHeight}
+function update(){ $("send").disabled=busy||(!$("input").value.trim()&&!pending)}
+function clearImage(){pending=null;$("file").value="";$("cameraFile").value="";$("preview").style.display="none";update()}
+async function prepareImage(file){if(!file)return;try{if(!["image/jpeg","image/png","image/webp"].includes(file.type))throw Error("Use JPG, PNG or WEBP.");let src=await new Promise((ok,no)=>{let r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(file)});let im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=src});let scale=Math.min(1,1000/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=im.width*scale;cv.height=im.height*scale;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);let dataUrl=cv.toDataURL("image/jpeg",.7),base64=dataUrl.split(",")[1];if(base64.length>2600000)throw Error("Image is too large. Choose a smaller image.");pending={dataUrl,base64,mimeType:"image/jpeg"};$("previewImg").src=dataUrl;$("preview").style.display="flex";update()}catch(e){clearImage();alert(e.message)}}
+async function send(){if(busy)return;let text=$("input").value.trim(),img=pending;if(!text&&!img)return;if(!current())newChat($("topic").value);let c=current(),topic=$("topic").value;let prev=[...c.messages].reverse().find(m=>m.role==="user"&&m.imageBase64);let used=img||(prev?{base64:prev.imageBase64,mimeType:prev.mimeType}:null);$("input").value="";$("input").style.height="auto";clearImage();c.messages.push({role:"user",text,imageUrl:img?.dataUrl||null,imageBase64:img?.base64||null,mimeType:img?.mimeType||null});if(c.title==="New chat")c.title=(text||"Image conversation").slice(0,40);c.topic=topic;save();busy=true;update();render();
+try{let history=c.messages.slice(0,-1).slice(-10).map(m=>({role:m.role,text:m.text||"",imageBase64:m.imageBase64||null,mimeType:m.mimeType||"image/jpeg"}));let r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text,topic,history,image:used?.base64||null,mimeType:used?.mimeType||"image/jpeg"})});let d=await r.json();if(!r.ok)throw Error(d.error||"Request failed "+r.status);let answer=d.reply||d.response||d.text||d.message;if(!answer)throw Error("No answer returned.");c.messages.push({role:"assistant",text:String(answer)})}catch(e){c.messages.push({role:"assistant",text:"I couldn't complete that request.\n\n"+e.message})}finally{busy=false;c.updatedAt=Date.now();save();render();update()}}
+$("new").onclick=()=>newChat();$("attach").onclick=()=>$("file").click();$("camera").onclick=()=>$("cameraFile").click();$("file").onchange=e=>prepareImage(e.target.files[0]);$("cameraFile").onchange=e=>prepareImage(e.target.files[0]);$("remove").onclick=clearImage;$("send").onclick=send;$("input").oninput=()=>{let t=$("input");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,150)+"px";update()};$("input").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};$("menu").onclick=()=>{$("sidebar").classList.add("open");$("overlay").classList.add("show")};function closeMenu(){$("sidebar").classList.remove("open");$("overlay").classList.remove("show")}$("overlay").onclick=closeMenu;
+document.querySelectorAll(".suggest").forEach(b=>b.onclick=()=>{$("input").value=b.dataset.prompt;update();$("input").focus()});document.querySelectorAll(".topicbtn").forEach(b=>b.onclick=()=>newChat(b.dataset.topic));$("search").onclick=()=>{let q=prompt("Search chats");if(q!==null)renderHistory(q)};$("voice").onclick=()=>{let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return alert("Try Chrome or Edge for voice typing.");if(recognition){recognition.stop();return}recognition=new SR();recognition.lang=navigator.language||"en-US";recognition.onresult=e=>{$("input").value=e.results[0][0].transcript;update()};recognition.onend=()=>recognition=null;recognition.start()};
+try{chats=JSON.parse(localStorage.getItem(KEY)||"[]")}catch{chats=[]}if(!Array.isArray(chats))chats=[];if(!chats.length)newChat();else{active=chats[0].id;render()}update();
 </script>
 </body>
 </html>
