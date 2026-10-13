@@ -5,24 +5,25 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 const API_KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 
-// Serve website files from the public folder
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json({ limit: "12mb" }));
 
-// Make sure the homepage opens
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Allow image uploads in chat requests
-app.use(express.json({ limit: "12mb" }));
-
 app.post("/api/chat", async (req, res) => {
   try {
-    const { message, image, mimeType } = req.body || {};
+    const {
+      message = "",
+      image = null,
+      mimeType = "image/jpeg",
+      history = [],
+      topic = "Everyday Help"
+    } = req.body || {};
 
     if (!API_KEY) {
       return res.status(500).json({
@@ -30,51 +31,90 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    if (!message?.trim() && !image) {
+    if (!String(message).trim() && !image) {
       return res.status(400).json({
         error: "Please enter a question or upload an image."
       });
     }
 
-    const parts = [];
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
 
-    if (image) {
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-      ];
-
-      const type = mimeType || "image/jpeg";
-
-      if (!allowedTypes.includes(type)) {
-        return res.status(400).json({
-          error: "Please upload a JPG, PNG, or WEBP image."
-        });
+    function imagePart(data, type) {
+      if (!data) return null;
+      if (!allowed.includes(type)) {
+        throw new Error("Use a JPG, PNG or WEBP image.");
       }
-
-      parts.push({
+      return {
         inline_data: {
           mime_type: type,
-          data: image
+          data
         }
+      };
+    }
+
+    function getParts(item) {
+      const parts = [];
+      if (String(item.text || "").trim()) {
+        parts.push({ text: String(item.text).trim() });
+      }
+      if (item.imageBase64) {
+        const part = imagePart(
+          item.imageBase64,
+          item.mimeType || "image/jpeg"
+        );
+        if (part) parts.push(part);
+      }
+      return parts;
+    }
+
+    const contents = [];
+
+    for (const item of (Array.isArray(history) ? history.slice(-10) : [])) {
+      if (!item || !["user", "assistant"].includes(item.role)) continue;
+
+      const parts = getParts(item);
+      if (!parts.length) continue;
+
+      contents.push({
+        role: item.role === "assistant" ? "model" : "user",
+        parts
       });
     }
 
-    const question = message?.trim() ||
-      "Please describe the attached image and read any visible text.";
+    const currentParts = [];
 
-    parts.push({
-      text: [
-        "You are Bizvanta AI, a helpful business and everyday assistant.",
-        "Answer in the same language as the user's question.",
-        "If an image is attached, inspect it carefully.",
-        "Read visible text and explain it when requested.",
-        "Do not invent text that is blurry or unreadable.",
-        "For medical questions, give general information and recommend professional advice when appropriate.",
-        "User's question: " + question
-      ].join("\n")
+    if (String(message).trim()) {
+      currentParts.push({ text: String(message).trim() });
+    }
+
+    if (image) {
+      const part = imagePart(image, mimeType);
+      if (part) currentParts.push(part);
+    }
+
+    contents.push({
+      role: "user",
+      parts: currentParts
     });
+
+    const systemPrompt = `
+You are Visionta AI, a friendly conversational AI assistant.
+
+Answer naturally, clearly and helpfully.
+Understand the conversation history and answer follow-up questions using context.
+Do not ask users to repeat information already provided.
+When an image is supplied, inspect it carefully and explain visible details.
+If asked what an object or image is for, explain its likely purpose.
+Use the image and conversation history for follow-up questions.
+Never invent details that are not visible or reliable.
+Match the user's language and writing style.
+If the user writes Roman Urdu, reply in Roman Urdu using English letters, not Urdu script.
+If the user writes English, reply in English.
+For other languages, use the user's language when possible.
+Use readable paragraphs, headings, lists and code blocks when helpful.
+Be conversational and avoid repetitive greetings.
+Current topic: ${String(topic).slice(0, 100)}
+`;
 
     const url =
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
@@ -85,10 +125,13 @@ app.post("/api/chat", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        contents: [{ parts }],
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents,
         generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 2048
+          temperature: 0.7,
+          maxOutputTokens: 4096
         }
       })
     });
@@ -116,26 +159,23 @@ app.post("/api/chat", async (req, res) => {
     return res.json({ reply });
 
   } catch (error) {
-    console.error("Chat error:", error);
+    console.error("Visionta AI error:", error);
     return res.status(500).json({
-      error: "The server could not complete the request."
+      error: error.message || "The server could not complete the request."
     });
   }
 });
 
-// Return JSON for unknown API routes
 app.use("/api", (req, res) => {
   res.status(404).json({
     error: "API route not found."
   });
 });
 
-// Start the server locally
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Bizvanta AI running on port ${PORT}`);
+    console.log(`Visionta AI running on port ${PORT}`);
   });
 }
 
-// Export the app for hosting platforms
 module.exports = app;
