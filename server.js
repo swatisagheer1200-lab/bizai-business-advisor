@@ -5,13 +5,19 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 const API_KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 
-// Static files: index.html, CSS, JavaScript
-app.use(express.static(__dirname));
+// Serve website files from the public folder
+app.use(express.static(path.join(__dirname, "public")));
 
-// Allow image uploads in JSON requests
+// Make sure the homepage opens
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Allow image uploads in chat requests
 app.use(express.json({ limit: "12mb" }));
 
 app.post("/api/chat", async (req, res) => {
@@ -20,13 +26,13 @@ app.post("/api/chat", async (req, res) => {
 
     if (!API_KEY) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY .env file mein nahi mili."
+        error: "GEMINI_API_KEY is missing from environment variables."
       });
     }
 
     if (!message?.trim() && !image) {
       return res.status(400).json({
-        error: "Sawal likho ya tasveer upload karo."
+        error: "Please enter a question or upload an image."
       });
     }
 
@@ -43,7 +49,7 @@ app.post("/api/chat", async (req, res) => {
 
       if (!allowedTypes.includes(type)) {
         return res.status(400).json({
-          error: "JPG, PNG ya WEBP tasveer upload karo."
+          error: "Please upload a JPG, PNG, or WEBP image."
         });
       }
 
@@ -56,16 +62,16 @@ app.post("/api/chat", async (req, res) => {
     }
 
     const question = message?.trim() ||
-      "Tasveer mein kya likha hai? Text parh kar samjhao.";
+      "Please describe the attached image and read any visible text.";
 
     parts.push({
       text: [
-        "You are Bizvanta AI, a helpful assistant.",
+        "You are Bizvanta AI, a helpful business and everyday assistant.",
         "Answer in the same language as the user's question.",
         "If an image is attached, inspect it carefully.",
         "Read visible text and explain it when requested.",
         "Do not invent text that is blurry or unreadable.",
-        "For unclear medicine names or dosages, ask the user to consult a pharmacist or doctor.",
+        "For medical questions, give general information and recommend professional advice when appropriate.",
         "User's question: " + question
       ].join("\n")
     });
@@ -91,10 +97,8 @@ app.post("/api/chat", async (req, res) => {
 
     if (!response.ok) {
       console.error("Gemini API error:", data);
-
       return res.status(502).json({
-        error: data.error?.message ||
-          "Gemini API request fail hui."
+        error: data.error?.message || "Gemini API request failed."
       });
     }
 
@@ -105,29 +109,33 @@ app.post("/api/chat", async (req, res) => {
 
     if (!reply) {
       return res.status(502).json({
-        error: "AI ka jawab nahi mila. Dobara koshish karo."
+        error: "AI did not return a response. Please try again."
       });
     }
 
     return res.json({ reply });
+
   } catch (error) {
     console.error("Chat error:", error);
-
     return res.status(500).json({
-      error: "Server request complete nahi kar saka."
+      error: "The server could not complete the request."
     });
   }
 });
 
-// Unknown API routes return JSON errors
+// Return JSON for unknown API routes
 app.use("/api", (req, res) => {
   res.status(404).json({
-    error: "API route nahi mila."
+    error: "API route not found."
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Bizvanta AI running at http://localhost:${PORT}`);
-  console.log(`Gemini API key found: ${Boolean(API_KEY)}`);
-  console.log(`Chat model: ${MODEL}`);
-});
+// Start the server locally
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Bizvanta AI running on port ${PORT}`);
+  });
+}
+
+// Export the app for hosting platforms
+module.exports = app;
