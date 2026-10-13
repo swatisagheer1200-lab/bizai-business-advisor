@@ -15,62 +15,15 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-async function callGemini(url, body) {
-  let lastError;
-
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(55000)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) return data;
-
-      const retryable = [408, 429, 500, 502, 503, 504].includes(response.status);
-
-      if (!retryable || attempt === 2) {
-        const error = new Error(
-          data.error?.message || `Gemini API error ${response.status}`
-        );
-        error.status = response.status;
-        throw error;
-      }
-
-      lastError = new Error(data.error?.message || "Temporary Gemini API error");
-    } catch (error) {
-      lastError = error;
-
-      if (error.status || attempt === 2) throw error;
-    }
-
-    await wait(1000 * (2 ** attempt));
-  }
-
-  throw lastError || new Error("Gemini request failed");
-}
-
 app.post("/api/chat", async (req, res) => {
   try {
     if (!API_KEY) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY is missing from Vercel environment variables."
+        error: "GEMINI_API_KEY is missing in Vercel environment variables."
       });
     }
 
-    const {
-      message,
-      image,
-      mimeType,
-      history,
-      topic
-    } = req.body || {};
+    const { message, image, mimeType, history, topic } = req.body || {};
 
     if (!message?.trim() && !image) {
       return res.status(400).json({
@@ -78,13 +31,28 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
+    const contents = [];
+
+    if (Array.isArray(history)) {
+      for (const item of history.slice(-8)) {
+        if (!item || !["user", "assistant", "model"].includes(item.role)) continue;
+
+        const text = String(item.text || item.content || "").slice(0, 2500);
+        if (!text) continue;
+
+        contents.push({
+          role: item.role === "assistant" ? "model" : item.role,
+          parts: [{ text }]
+        });
+      }
+    }
+
     const parts = [];
 
     if (image) {
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
       const type = mimeType || "image/jpeg";
 
-      if (!allowedTypes.includes(type)) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(type)) {
         return res.status(400).json({
           error: "Please upload a JPG, PNG, or WEBP image."
         });
@@ -98,54 +66,53 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    const question = message?.trim() ||
-      "Please describe the attached image and read any visible text.";
-
-    const instructions = [
-      "You are Visionta AI, a helpful AI assistant.",
-      "Answer in the same language and writing style as the user.",
-      "If the user writes Roman Urdu using English letters, reply in Roman Urdu using English letters.",
-      "If the user writes English, reply in English.",
-      "Use the conversation history to understand follow-up questions.",
-      "If an image is attached, inspect it carefully and answer questions about it.",
-      "Do not invent details that are not visible or known.",
-      `Current topic: ${String(topic || "Everyday Help").slice(0, 100)}`,
-      "User's latest message: " + question
-    ].join("\n");
-
-    const contents = [];
-
-    if (Array.isArray(history)) {
-      for (const item of history.slice(-12)) {
-        if (!item || !["user", "assistant", "model"].includes(item.role)) continue;
-
-        const text = String(item.text || item.content || "").slice(0, 5000);
-        if (!text) continue;
-
-        contents.push({
-          role: item.role === "assistant" ? "model" : item.role,
-          parts: [{ text }]
-        });
-      }
-    }
-
-    const latestParts = [...parts, { text: instructions }];
-
-    contents.push({
-      role: "user",
-      parts: latestParts
+    parts.push({
+      text: [
+        "You are Visionta AI, a helpful, friendly assistant.",
+        "Reply naturally, directly, and without unnecessary introductions.",
+        "Match the user's language and writing style.",
+        "If the user writes Roman Urdu, reply in Roman Urdu using English letters.",
+        "If the user writes English, reply in English.",
+        "Use natural emojis when they improve the conversation. Do not overuse them.",
+        "Format answers using Markdown when useful: **bold**, headings, numbered steps, bullet lists and short paragraphs.",
+        "Keep simple answers short. Give more detail when the user asks for it.",
+        "For follow-up questions, use the conversation history.",
+        "Inspect uploaded images carefully. Never guess unreadable text or uncertain medicine names.",
+        "For medical topics, explain uncertainty and recommend checking with a qualified professional.",
+        "Current topic: " + String(topic || "Everyday Help").slice(0, 80),
+        "User's latest message: " + String(message || "Please describe this image.").slice(0, 4000)
+      ].join("\n")
     });
+
+    contents.push({ role: "user", parts });
 
     const url =
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
-    const data = await callGemini(url, {
-      contents,
-      generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 2048
-      }
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents,
+        generationConfig: {
+          temperature: 0.5,
+          maxOutputTokens: 1024
+        }
+      }),
+      signal: AbortSignal.timeout(55000)
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API error:", response.status, data.error?.message);
+
+      return res.status(response.status === 429 || response.status === 503 ? 503 : 502).json({
+        error: response.status === 503 || response.status === 429
+          ? "AI service is busy right now. Please try again shortly."
+          : data.error?.message || "AI request failed."
+      });
+    }
 
     const reply = data.candidates?.[0]?.content?.parts
       ?.map(part => part.text || "")
@@ -154,24 +121,18 @@ app.post("/api/chat", async (req, res) => {
 
     if (!reply) {
       return res.status(502).json({
-        error: "AI returned no text. Please try again."
+        error: "AI returned an empty response. Please try again."
       });
     }
 
-    return res.json({ reply });
+    res.json({ reply });
   } catch (error) {
-    console.error("Visionta AI error:", error.message);
+    console.error("Visionta chat error:", error.message);
 
-    const status = error.status === 429 || error.status === 503
-      ? 503
-      : error.status === 400 || error.status === 403
-      ? 502
-      : 500;
-
-    return res.status(status).json({
-      error: error.status === 503
-        ? "Gemini is busy right now. Please try again shortly."
-        : error.message || "The server could not complete the request."
+    res.status(500).json({
+      error: error.name === "TimeoutError"
+        ? "The AI took too long to respond. Please try again."
+        : "The server could not complete the request."
     });
   }
 });
@@ -181,9 +142,7 @@ app.use("/api", (req, res) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Visionta AI running on port ${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`Visionta AI running on port ${PORT}`));
 }
 
 module.exports = app;
