@@ -1,174 +1,155 @@
 
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bizvanta AI — Demo</title>
+<!-- Bizvanta AI: Chat input controls -->
 <style>
-:root{--bg:#fff;--panel:#f7f7f8;--line:#e5e5e5;--text:#202123;--blue:#2563eb}
-*{box-sizing:border-box}
-body{margin:0;font:16px/1.4 Arial,sans-serif;color:var(--text);height:100vh;overflow:hidden}
-.app{display:flex;height:100vh}
-.sidebar{width:260px;background:var(--panel);border-right:1px solid var(--line);padding:16px 10px;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
-.brand{font-size:21px;font-weight:700;padding:8px 10px 18px}
-.nav{padding:10px 12px;border-radius:10px;cursor:pointer}
-.nav:hover,.nav.active{background:#e9e9eb}
-.section{font-size:13px;color:#777;padding:18px 12px 4px}
-.bottom{margin-top:auto;border-top:1px solid var(--line);padding:14px 10px;color:#555;font-size:14px}
-.main{flex:1;display:flex;flex-direction:column;min-width:0}
-.top{height:62px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #fafafa}
-.pill{border:1px solid #e5e5e5;border-radius:30px;padding:9px 30px}
-.content{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:70px 24px 20px}
-.welcome{font-size:30px;margin:55px 0 40px;text-align:center}
-.composer-wrap{width:min(780px,100%);margin-top:auto}
-.composer{display:flex;align-items:center;gap:10px;border:1px solid #e5e5e5;border-radius:28px;padding:10px 12px;position:relative;background:white;box-shadow:0 4px 20px #00000008}
-.iconbtn{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:50%;cursor:pointer;font-size:24px;color:#555;flex-shrink:0}
-.iconbtn:hover{background:#f1f1f1}
-.entry{border:0;outline:0;resize:none;flex:1;font:16px Arial;min-width:0;max-height:140px;padding:8px 2px}
-.send{background:var(--blue);color:white;font-size:18px}
-.attach-menu{position:absolute;left:6px;bottom:58px;background:white;border:1px solid #e5e5e5;border-radius:14px;box-shadow:0 8px 28px #0002;padding:7px;width:225px;display:none;z-index:5}
-.attach-menu.show{display:block}
-.menuitem{display:flex;gap:10px;align-items:center;padding:12px;border-radius:9px;cursor:pointer;font-size:14px}
-.menuitem:hover{background:#f3f3f3}
-.preview{display:none;margin-bottom:10px;padding:9px 12px;background:#f6f6f6;border-radius:12px;font-size:13px}
-.preview.show{display:block}
-.messages{width:min(780px,100%);display:flex;flex-direction:column;gap:16px}
-.bubble{padding:13px 17px;border-radius:18px;max-width:85%;white-space:pre-wrap}
-.user{align-self:flex-end;background:#f0f0f0}
-.status{font-size:12px;color:#777;text-align:center;margin-top:10px;min-height:16px}
-@media(max-width:650px){.sidebar{display:none}.content{padding:20px 12px}.welcome{font-size:25px;margin:35px 0 25px}.composer{gap:5px;padding:7px}.iconbtn{width:30px;height:30px}.entry{font-size:15px}}
+  #bv-attach-menu {
+    display: none;
+    position: absolute;
+    bottom: 55px;
+    left: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 4px 16px #0002;
+    z-index: 9999;
+  }
+  #bv-attach-menu button {
+    display: block;
+    width: 150px;
+    padding: 10px;
+    background: white;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+  }
+  #bv-attach-menu button:hover { background: #f3f3f3; }
+  #bv-preview { max-width: 180px; max-height: 120px; display: none; }
+  #bv-status { font-size: 12px; color: #666; }
 </style>
-</head>
-<body>
-<div class="app">
-<aside class="sidebar">
-  <div class="brand">Bizvanta AI</div>
-  <div class="nav active">✎ &nbsp; New chat</div>
-  <div class="nav">▧ &nbsp; Images</div>
-  <div class="nav">◉ &nbsp; Study &amp; Learning</div>
-  <div class="nav">☼ &nbsp; Everyday Help</div>
-  <div class="nav">▤ &nbsp; Writing &amp; Translation</div>
-  <div class="nav">▦ &nbsp; Planning</div>
-  <div class="section">Business</div>
-  <div class="nav">◇ &nbsp; Business Ideas</div>
-  <div class="nav">▣ &nbsp; Business Advisor</div>
-  <div class="nav">↗ &nbsp; Marketing &amp; Sales</div>
-  <div class="bottom">◉ &nbsp; Demo account<br><span style="color:#888">Preview mode</span></div>
-</aside>
-<main class="main">
-  <div class="top"><div class="pill">Chat</div></div>
-  <div class="content">
-    <div class="welcome" id="welcome">Ready when you are.</div>
-    <div class="messages" id="messages"></div>
-    <div class="composer-wrap">
-      <div class="preview" id="preview"></div>
-      <div class="composer">
-        <button class="iconbtn" id="plus" aria-label="Add attachment">＋</button>
-        <textarea class="entry" id="entry" rows="1" placeholder="Message Bizvanta AI"></textarea>
-        <button class="iconbtn" id="mic" aria-label="Voice input" title="Voice input">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="3" width="6" height="12" rx="3"></rect>
-            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path>
-          </svg>
-        </button>
-        <button class="iconbtn send" id="send" aria-label="Send">↑</button>
-        <div class="attach-menu" id="attachMenu">
-          <div class="menuitem" id="uploadBtn">▧ <span>Upload photo or file</span></div>
-          <div class="menuitem" id="cameraBtn">▣ <span>Take a photo with camera</span></div>
-        </div>
-      </div>
-      <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.doc,.docx" hidden>
-      <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-      <div class="status" id="status">Demo only — messages are not sent to an AI backend.</div>
-    </div>
+
+<div id="bv-tools" style="display:flex;align-items:center;gap:10px;position:relative;">
+  <button type="button" id="bv-plus" aria-label="Attachments">＋</button>
+
+  <div id="bv-attach-menu">
+    <button type="button" id="bv-camera">📷 Camera</button>
+    <button type="button" id="bv-upload">📎 Upload file</button>
   </div>
-</main>
+
+  <input id="bv-file" type="file" accept="image/*,.pdf,.txt,.doc,.docx" hidden>
+  <input id="bv-camera-file" type="file" accept="image/*" capture="environment" hidden>
+
+  <button type="button" id="bv-mic" aria-label="Voice input">🎙</button>
+  <button type="button" id="bv-send">➤ Send</button>
+  <button type="button" id="bv-speak" aria-label="Read answer aloud">🔊</button>
 </div>
+
+<img id="bv-preview" alt="Selected image preview">
+<div id="bv-status" role="status"></div>
+
 <script>
-const $=id=>document.getElementById(id);
-const plus=$('plus'),menu=$('attachMenu'),entry=$('entry');
-const preview=$('preview'),status=$('status');
+(() => {
+  const $ = id => document.getElementById(id);
+  let selectedFile = null;
 
-plus.addEventListener('click',e=>{
-  e.stopPropagation();
-  menu.classList.toggle('show');
-});
-document.addEventListener('click',e=>{
-  if(!menu.contains(e.target)&&e.target!==plus)menu.classList.remove('show');
-});
-$('uploadBtn').addEventListener('click',()=>{
-  menu.classList.remove('show');$('fileInput').click();
-});
-$('cameraBtn').addEventListener('click',()=>{
-  menu.classList.remove('show');$('cameraInput').click();
-});
-function showFile(file){
-  if(!file)return;
-  preview.textContent='Selected: '+file.name;
-  preview.classList.add('show');
-  status.textContent='Demo only: file selected, not uploaded to a server.';
-  if(file.type.startsWith('image/')){
-    const img=document.createElement('img');
-    img.src=URL.createObjectURL(file);
-    img.alt='Selected photo preview';
-    img.style.cssText='display:block;max-width:180px;max-height:120px;margin-top:8px;border-radius:8px';
-    preview.appendChild(img);
-  }
-}
-$('fileInput').addEventListener('change',e=>showFile(e.target.files[0]));
-$('cameraInput').addEventListener('change',e=>showFile(e.target.files[0]));
+  $('bv-plus').onclick = () => {
+    const menu = $('bv-attach-menu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+  };
 
-let recognition=null,listening=false;
-$('mic').addEventListener('click',()=>{
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){
-    status.textContent='Voice recognition is not supported here. Try Chrome or Edge.';
-    return;
+  $('bv-camera').onclick = () => {
+    $('bv-attach-menu').style.display = 'none';
+    $('bv-camera-file').click();
+  };
+
+  $('bv-upload').onclick = () => {
+    $('bv-attach-menu').style.display = 'none';
+    $('bv-file').click();
+  };
+
+  function chooseFile(file) {
+    if (!file) return;
+    selectedFile = file;
+    const preview = $('bv-preview');
+    if (file.type.startsWith('image/')) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
+    $('bv-status').textContent = 'Selected: ' + file.name;
   }
-  if(listening){recognition.stop();return;}
-  recognition=new SR();
-  recognition.lang='en-US';
-  recognition.interimResults=true;
-  recognition.continuous=false;
-  recognition.onstart=()=>{
-    listening=true;
-    $('mic').style.background='#fee2e2';
-    status.textContent='Listening… speak now';
+
+  $('bv-file').onchange = e => chooseFile(e.target.files[0]);
+  $('bv-camera-file').onchange = e => chooseFile(e.target.files[0]);
+
+  // Voice input: supported in Chrome and some other browsers.
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  $('bv-mic').onclick = () => {
+    if (!SpeechRecognition) {
+      $('bv-status').textContent =
+        'Voice typing is not supported in this browser.';
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onresult = event => {
+      const spoken = event.results[0][0].transcript;
+      const input = document.querySelector(
+        '#message-input, #message, textarea, input[type="text"]'
+      );
+      if (input) {
+        input.value = (input.value ? input.value + ' ' : '') + spoken;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      } else {
+        $('bv-status').textContent = 'Voice: ' + spoken;
+      }
+    };
+
+    recognition.onerror = () => {
+      $('bv-status').textContent = 'Mic error. Check microphone permission.';
+    };
+    recognition.start();
   };
-  recognition.onresult=e=>{
-    let text='';
-    for(let i=e.resultIndex;i<e.results.length;i++)text+=e.results[i][0].transcript;
-    entry.value=text;
+
+  // Reads the latest assistant response aloud.
+  $('bv-speak').onclick = () => {
+    const answer = document.querySelector(
+      '.assistant-message:last-child, .ai-message:last-child, [data-role="assistant"]:last-child'
+    );
+    const text = answer?.innerText?.trim();
+
+    if (!text) {
+      $('bv-status').textContent =
+        'No AI answer found yet. Connect this button to your answer element.';
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
   };
-  recognition.onerror=e=>{
-    status.textContent=e.error==='not-allowed'
-      ?'Microphone permission blocked. Allow it in browser settings.'
-      :'Voice input error: '+e.error;
+
+  // IMPORTANT: connect this button to your existing message/API function.
+  $('bv-send').onclick = () => {
+    const input = document.querySelector(
+      '#message-input, #message, textarea, input[type="text"]'
+    );
+    const message = input?.value?.trim();
+
+    if (!message && !selectedFile) {
+      $('bv-status').textContent = 'Please type a message or choose a file.';
+      return;
+    }
+
+    $('bv-status').textContent =
+      'Input ready. Connect bv-send to your existing AI send/API function.';
+    // Your existing backend send function must be called here.
+    // Send selectedFile using FormData if your backend supports attachments.
   };
-  recognition.onend=()=>{
-    listening=false;
-    $('mic').style.background='transparent';
-    if(status.textContent==='Listening… speak now')
-      status.textContent='Voice captured. Review it, then press send.';
-  };
-  recognition.start();
-});
-function submit(){
-  const value=entry.value.trim();
-  if(!value)return;
-  $('welcome').style.display='none';
-  const bubble=document.createElement('div');
-  bubble.className='bubble user';
-  bubble.textContent=value;
-  $('messages').appendChild(bubble);
-  entry.value='';
-  status.textContent='Demo only: message shown locally, not sent to AI.';
-}
-$('send').addEventListener('click',submit);
-entry.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();}
-});
+})();
 </script>
-</body>
-</html>
