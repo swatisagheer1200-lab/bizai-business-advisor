@@ -1,740 +1,985 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bizvanta AI</title>
+<meta name="theme-color" content="#ffffff">
+<title>Visionta AI</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#202123;background:#fff;height:100vh;overflow:hidden}
-button,textarea,input,select{font:inherit}
-button{cursor:pointer}
-.app{display:flex;height:100vh;height:100dvh}
-.sidebar{width:260px;flex-shrink:0;background:#f7f7f8;padding:12px;display:flex;flex-direction:column;gap:12px;border-right:1px solid #eee}
-.brand{font-size:20px;font-weight:700;padding:8px 10px}
-.brand span{color:#00a884}
-.side-btn{width:100%;padding:12px;border:1px solid #e0e0e0;border-radius:12px;background:white;text-align:left}
-.topic-btn,.history-btn{width:100%;border:0;background:transparent;text-align:left;padding:11px 10px;border-radius:8px}
-.topic-btn:hover,.history-btn:hover{background:#eceef0}
-.topic-btn.active{background:#e8f5f1}
-.section-label{font-size:12px;color:#777;padding:5px 8px}
-.topics{display:grid;gap:2px}
-.history{overflow:auto}
-.sidebar-bottom{margin-top:auto;border-top:1px solid #ddd;padding:12px 4px;font-size:12px;color:#555}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%;min-height:0}
-.topbar{height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
-.chat-scroll{flex:1;min-height:0;overflow-y:auto;padding:15px 20px}
-.welcome{max-width:790px;margin:12vh auto 0;text-align:center}
-.welcome h1{font-size:30px;margin:0 0 15px}
-.welcome p{color:#777;margin:0}
-.suggestions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:24px}
-.suggestion{min-height:94px;background:#fff;border:1px solid #e0e0e0;border-radius:15px;text-align:left;padding:14px;font-size:14px}
-.suggestion:hover{background:#fafafa}
-.suggestion small{display:inline-block;color:#777;margin-top:8px}
-.messages{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-.message{display:flex;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
-.message.user{justify-content:flex-end}
-.bubble{max-width:88%;padding:12px 15px;border-radius:17px}
-.message.user .bubble{background:#f1f1f1}
-.message.assistant .bubble{padding-left:0}
-.message-photo{display:block;max-width:min(100%,320px);max-height:320px;object-fit:contain;border-radius:12px;margin-top:8px}
-.composer-wrap{flex-shrink:0;padding:8px 20px 14px;background:white;padding-bottom:max(14px,env(safe-area-inset-bottom))}
-.composer{max-width:790px;margin:auto;position:relative;border:1px solid #dadce0;border-radius:28px;padding:8px 10px;display:flex;align-items:flex-end;gap:8px;box-shadow:0 2px 8px #00000008}
-#messageInput{flex:1;min-width:0;resize:none;border:0;outline:0;max-height:150px;min-height:34px;padding:8px 3px;line-height:1.5}
-.icon-btn{width:38px;height:38px;flex-shrink:0;border:0;border-radius:50%;background:transparent;display:grid;place-items:center;color:#333}
-.icon-btn:hover{background:#eee}
-.send{background:#d6d6da;color:white}
-.send:disabled{opacity:.45;cursor:wait}
-.mic.listening{background:#fee2e2;color:#b91c1c}
-.status{text-align:center;min-height:17px;font-size:12px;color:#777;margin-top:5px;overflow-wrap:anywhere}
-.note{text-align:center;color:#999;font-size:11px;margin-top:5px}
-#attachmentMenu{position:absolute;bottom:58px;left:10px;display:none;background:white;border:1px solid #ddd;border-radius:13px;padding:7px;box-shadow:0 5px 20px #0002;z-index:10;width:180px}
-#attachmentMenu button{display:block;width:100%;border:0;background:white;text-align:left;padding:11px;border-radius:8px}
-#attachmentMenu button:hover{background:#f1f1f1}
-#preview{display:none;max-width:790px;margin:0 auto 8px;align-items:center;gap:10px;font-size:12px;color:#555}
-#preview img{width:50px;height:50px;object-fit:cover;border-radius:8px}
-#preview button{border:0;background:#eee;border-radius:50%;width:26px;height:26px}
-@media(max-width:700px){
-.sidebar{display:none}
-.welcome{margin-top:8vh}
-.welcome h1{font-size:27px}
-.suggestions{grid-template-columns:1fr}
-.composer-wrap{padding:8px 8px max(10px,env(safe-area-inset-bottom))}
-.chat-scroll{padding:12px}
-.topbar{padding:0 12px}
-#speechLanguage{max-width:64px!important}
-.composer{gap:3px;padding:6px}
-.icon-btn{width:34px;height:36px}
-#messageInput{font-size:16px}
-.bubble{max-width:94%}
+:root {
+  --sidebar: #f7f7f8;
+  --text: #202123;
+  --muted: #777;
+  --border: #e5e5e5;
+  --accent: #10a37f;
+  --hover: #ececec;
+  --user: #f4f4f4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Arial, sans-serif;
+  color: var(--text);
+  background: white;
+}
+button, textarea, input { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.app { display: flex; height: 100dvh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-right: 1px solid var(--border);
+  transition: transform .2s ease;
+  z-index: 20;
+}
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 5px 20px;
+}
+.brand {
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -.8px;
+}
+.brand span { color: var(--accent); }
+.icon-btn {
+  border: 0;
+  background: transparent;
+  border-radius: 9px;
+  min-width: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 20px;
+}
+.icon-btn:hover { background: var(--hover); }
+.side-btn {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: 9px;
+  padding: 11px 10px;
+  margin-bottom: 5px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+}
+.side-btn:hover, .history-item:hover { background: var(--hover); }
+.side-btn.primary { background: white; border: 1px solid var(--border); }
+.side-heading {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 20px 9px 8px;
+}
+.history {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 80px;
+}
+.history-item {
+  border: 0;
+  background: transparent;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.history-item.active { background: #e8e8e8; }
+.history-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.delete-chat {
+  border: 0;
+  background: transparent;
+  color: #888;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+.delete-chat:hover { background: #ddd; color: #222; }
+.profile {
+  border-top: 1px solid var(--border);
+  padding: 13px 5px 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: white; background: #147d64;
+  font-weight: 700;
+}
+
+/* Main chat */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+.topbar {
+  height: 54px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: rgba(255,255,255,.94);
+  z-index: 5;
+}
+.top-left { display: flex; align-items: center; gap: 8px; }
+.mobile-brand { display: none; font-weight: 750; font-size: 18px; }
+.model-label {
+  border: 0; background: transparent; font-size: 15px;
+  padding: 8px; border-radius: 8px;
+}
+.model-label:hover { background: var(--sidebar); }
+.status { font-size: 12px; color: var(--muted); }
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px 32px;
+  scroll-behavior: smooth;
+}
+.message-list {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+.message {
+  display: flex;
+  gap: 13px;
+  margin: 0 auto 27px;
+  align-items: flex-start;
+}
+.message .avatar {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  font-size: 12px;
+}
+.message-content {
+  min-width: 0;
+  flex: 1;
+  line-height: 1.72;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  padding-top: 3px;
+}
+.message-content p { margin: 0 0 12px; }
+.message-content pre {
+  background: #f5f5f5;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.message-content code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.message-content img {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin: 8px 0 12px;
+  border: 1px solid var(--border);
+}
+.message-actions { display: flex; gap: 5px; margin-top: 9px; }
+.message-actions button {
+  border: 0; background: transparent; color: #777;
+  padding: 5px 7px; border-radius: 6px; font-size: 12px;
+}
+.message-actions button:hover { background: var(--hover); color: #222; }
+
+.welcome {
+  max-width: 800px;
+  margin: auto;
+  padding: 28px 16px 35px;
+  text-align: center;
+}
+.welcome h1 { font-size: clamp(26px, 4vw, 34px); margin: 0 0 9px; }
+.welcome p { color: var(--muted); font-size: 14px; margin: 0 0 26px; }
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 auto;
+  max-width: 650px;
+}
+.suggestion {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 76px;
+}
+.suggestion:hover { background: #fafafa; border-color: #bbb; }
+.suggestion strong { display: block; font-size: 13px; margin-bottom: 5px; }
+.suggestion span { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+.composer-area {
+  padding: 8px 18px 12px;
+  background: white;
+}
+.composer-wrap { max-width: 800px; margin: 0 auto; }
+.attachment-preview {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 12px;
+}
+.attachment-preview img {
+  width: 62px; height: 62px; object-fit: cover;
+  border-radius: 10px; border: 1px solid var(--border);
+}
+.attachment-preview .file-info { font-size: 12px; color: var(--muted); flex: 1; }
+.composer {
+  border: 1px solid #d9d9d9;
+  border-radius: 25px;
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.composer:focus-within { border-color: #bbb; }
+.composer textarea {
+  border: 0; outline: none; resize: none;
+  background: transparent; width: 100%;
+  max-height: 180px; min-height: 30px;
+  padding: 6px 8px;
+  font-size: 15px; line-height: 1.5;
+}
+.composer textarea:focus { outline: none; }
+.composer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px;
+}
+.tools-left, .tools-right { display: flex; align-items: center; gap: 4px; }
+.tool-btn {
+  border: 0; background: transparent; border-radius: 50%;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  font-size: 20px; color: #333;
+}
+.tool-btn:hover { background: var(--hover); }
+.tool-btn.listening { background: #ffe6e6; color: #c22; }
+.send-btn {
+  border: 0; border-radius: 50%; width: 37px; height: 37px;
+  display: grid; place-items: center;
+  color: white; background: #202123; font-size: 18px;
+}
+.send-btn:disabled { opacity: .35; cursor: not-allowed; }
+.disclaimer {
+  color: #858585; font-size: 11px; text-align: center;
+  padding: 9px 4px 0; line-height: 1.5;
+}
+.topic-select {
+  max-width: 150px; border: 0; background: transparent;
+  color: #777; font-size: 12px; padding: 5px;
+}
+.loading-dots { color: #777; }
+.error-box {
+  background: #fff4f4; color: #a22;
+  border: 1px solid #f2d4d4; border-radius: 10px;
+  padding: 10px 12px; font-size: 13px;
+}
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.35); z-index: 15;
+}
+.overlay.show { display: block; }
+
+@media (max-width: 760px) {
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0;
+    width: 285px; min-width: 285px;
+    transform: translateX(-105%);
+    box-shadow: none;
+  }
+  .sidebar.open { transform: translateX(0); box-shadow: 8px 0 35px rgba(0,0,0,.1); }
+  .mobile-brand { display: inline; }
+  .topbar { padding: 0 9px; }
+  .messages { padding: 18px 13px 20px; }
+  .welcome { padding: 26px 4px 22px; }
+  .welcome h1 { font-size: 27px; }
+  .suggestions { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .suggestion { padding: 12px 10px; min-height: 82px; }
+  .composer-area { padding: 6px 9px max(9px, env(safe-area-inset-bottom)); }
+  .composer { border-radius: 22px; padding: 7px; }
+  .composer textarea { font-size: 16px; padding: 6px; }
+  .topic-select { max-width: 110px; }
+  .message { gap: 9px; margin-bottom: 23px; }
+  .message-content { font-size: 14px; }
+  .status { display: none; }
+}
+@media (max-width: 380px) {
+  .suggestions { grid-template-columns: 1fr; }
+  .suggestion { min-height: 60px; }
+  .topic-select { display: none; }
 }
 </style>
 </head>
+
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand">Bizvanta <span>AI</span></div>
-    <button class="side-btn" id="newChat">＋ &nbsp; New chat</button>
-    <div class="topics">
-      <button class="topic-btn" data-topic="Images">▧ &nbsp; Images</button>
-      <button class="topic-btn" data-topic="Study & Learning">▤ &nbsp; Study &amp; Learning</button>
-      <button class="topic-btn" data-topic="Health & Medicine">✚ &nbsp; Health &amp; Medicine</button>
-      <button class="topic-btn" data-topic="Everyday Help">◉ &nbsp; Everyday Help</button>
-      <button class="topic-btn" data-topic="Writing & Translation">✎ &nbsp; Writing &amp; Translation</button>
-      <button class="topic-btn" data-topic="Planning">▦ &nbsp; Planning</button>
-      <button class="topic-btn" data-topic="Business Ideas">◇ &nbsp; Business Ideas</button>
-      <button class="topic-btn" data-topic="Business Advisor">▥ &nbsp; Business Advisor</button>
-      <button class="topic-btn" data-topic="Marketing & Sales">↗ &nbsp; Marketing &amp; Sales</button>
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row">
+      <div class="brand">Visionta <span>AI</span></div>
+      <button class="icon-btn" id="closeSidebar" aria-label="Close sidebar">✕</button>
     </div>
-    <div>
-      <div class="section-label">Recent chats</div>
-      <div class="history" id="history"></div>
+
+    <button class="side-btn primary" id="newChat"><span>＋</span> New chat</button>
+    <button class="side-btn" id="searchHistory"><span>⌕</span> Search chats</button>
+
+    <div class="side-heading">Explore</div>
+    <button class="side-btn topic-btn" data-topic="Images">▧ Images</button>
+    <button class="side-btn topic-btn" data-topic="Study & Learning">▤ Study & Learning</button>
+    <button class="side-btn topic-btn" data-topic="Writing & Translation">✎ Writing & Translation</button>
+    <button class="side-btn topic-btn" data-topic="Everyday Help">◉ Everyday Help</button>
+    <button class="side-btn topic-btn" data-topic="Planning">☷ Planning</button>
+    <button class="side-btn topic-btn" data-topic="Business Advisor">▦ Business Advisor</button>
+    <button class="side-btn topic-btn" data-topic="Marketing & Sales">↗ Marketing & Sales</button>
+
+    <div class="side-heading">Recent chats</div>
+    <div class="history" id="history"></div>
+
+    <div class="profile">
+      <div class="avatar">V</div>
+      <div><strong>Visionta AI</strong><br><span style="color:#888">AI Assistant</span></div>
     </div>
-    <div class="sidebar-bottom"><b>Bizvanta AI</b><br>Your business assistant</div>
   </aside>
 
   <main class="main">
-    <div class="topbar">
-      <b>Bizvanta AI⌄</b>
-      <button class="icon-btn" id="topNewChat" title="New chat">✎</button>
-    </div>
-
-    <div class="chat-scroll" id="chatScroll">
-      <section class="welcome" id="welcome">
-        <h1>Ready when you are.</h1>
-        <p>What would you like to work on today?</p>
-        <div class="suggestions">
-          <button class="suggestion" data-prompt="Help me create an image or sticker.">▧<br><b>Create an image or sticker</b><br><small>Turn an idea into a visual concept</small></button>
-          <button class="suggestion" data-prompt="Help me write or edit this text.">✎<br><b>Write or edit</b><br><small>Draft, rewrite, or improve text</small></button>
-          <button class="suggestion" data-prompt="Research a topic and explain it clearly.">⌕<br><b>Research a topic</b><br><small>Explore a business idea</small></button>
-        </div>
-      </section>
-      <section class="messages" id="messages"></section>
-    </div>
-
-    <div class="composer-wrap">
-      <div id="preview">
-        <img id="previewImage" alt="Selected image">
-        <span id="previewName"></span>
-        <button type="button" id="removeImage" title="Remove image">×</button>
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" id="openSidebar" aria-label="Open menu">☰</button>
+        <span class="mobile-brand">Visionta AI</span>
+        <button class="model-label" id="modelButton">Visionta <span style="color:#888">⌄</span></button>
       </div>
+      <div class="status">AI assistant</div>
+    </header>
 
-      <form class="composer" id="chatForm">
-        <div id="attachmentMenu">
-          <button type="button" id="cameraOption">📷 &nbsp; Camera</button>
-          <button type="button" id="uploadOption">▧ &nbsp; Upload image</button>
+    <section class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <h1>What can I help with?</h1>
+        <p>Ask anything. Let's work through it together.</p>
+        <div class="suggestions">
+          <button class="suggestion" data-prompt="Help me brainstorm some creative ideas.">
+            <strong>✦ Brainstorm ideas</strong>
+            <span>Explore ideas and possibilities</span>
+          </button>
+          <button class="suggestion" data-prompt="Explain this topic step by step in simple language.">
+            <strong>▤ Learn something</strong>
+            <span>Understand a difficult topic</span>
+          </button>
+          <button class="suggestion" data-prompt="Help me write a clear and professional message.">
+            <strong>✎ Write something</strong>
+            <span>Draft, improve or translate text</span>
+          </button>
+          <button class="suggestion" data-prompt="Give me a practical business idea and a step-by-step plan.">
+            <strong>↗ Build a business</strong>
+            <span>Ideas, marketing and planning</span>
+          </button>
         </div>
-        <button type="button" class="icon-btn" id="plusBtn" title="Add photo" aria-label="Add photo">＋</button>
-        <textarea id="messageInput" rows="1" placeholder="Message Bizvanta AI..." aria-label="Message Bizvanta AI"></textarea>
-        <select id="speechLanguage" title="Voice language" style="max-width:75px;border:0;background:transparent;color:#666;font-size:11px;outline:0">
-          <option value="ur-PK">Urdu</option>
-          <option value="en-US">English</option>
-        </select>
-        <button type="button" class="icon-btn mic" id="micBtn" title="Voice typing" aria-label="Voice typing">🎙</button>
-        <button type="submit" class="icon-btn send" id="sendBtn" title="Send" aria-label="Send">↑</button>
-      </form>
+      </div>
+      <div class="message-list" id="messageList"></div>
+    </section>
 
-      <input type="file" id="uploadInput" accept="image/*" hidden>
-      <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-      <div class="status" id="status" role="status" aria-live="polite"></div>
-      <div class="note">Bizvanta AI can make mistakes. Check important information.</div>
-    </div>
+    <section class="composer-area">
+      <div class="composer-wrap">
+        <div class="attachment-preview" id="attachmentPreview">
+          <img id="previewImage" alt="Selected image preview">
+          <div class="file-info" id="fileInfo">Image attached</div>
+          <button class="icon-btn" id="removeImage" aria-label="Remove image">✕</button>
+        </div>
+
+        <div class="composer">
+          <textarea id="messageInput" rows="1" placeholder="Message Visionta AI"></textarea>
+          <div class="composer-bottom">
+            <div class="tools-left">
+              <button class="tool-btn" id="attachButton" aria-label="Attach image" title="Add image">＋</button>
+              <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp" hidden>
+              <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+              <button class="tool-btn" id="cameraButton" aria-label="Take photo" title="Camera">▣</button>
+              <button class="tool-btn" id="voiceButton" aria-label="Voice typing" title="Voice typing">🎙</button>
+              <select class="topic-select" id="topicSelect" aria-label="Choose topic">
+                <option value="Everyday Help">Everyday Help</option>
+                <option value="Images">Images</option>
+                <option value="Study & Learning">Study & Learning</option>
+                <option value="Writing & Translation">Writing & Translation</option>
+                <option value="Planning">Planning</option>
+                <option value="Business Advisor">Business Advisor</option>
+                <option value="Marketing & Sales">Marketing & Sales</option>
+              </select>
+            </div>
+            <div class="tools-right">
+              <button class="send-btn" id="sendButton" aria-label="Send message" disabled>↑</button>
+            </div>
+          </div>
+        </div>
+        <div class="disclaimer">Visionta AI can make mistakes. Check important information.</div>
+      </div>
+    </section>
   </main>
 </div>
 
 <script>
-const input = document.getElementById('messageInput');
-const form = document.getElementById('chatForm');
-const messagesEl = document.getElementById('messages');
-const welcome = document.getElementById('welcome');
-const statusEl = document.getElementById('status');
-const sendBtn = document.getElementById('sendBtn');
-const micBtn = document.getElementById('micBtn');
-const language = document.getElementById('speechLanguage');
-const attachmentMenu = document.getElementById('attachmentMenu');
-const uploadInput = document.getElementById('uploadInput');
-const cameraInput = document.getElementById('cameraInput');
-const preview = document.getElementById('preview');
+(() => {
+  "use strict";
 
-const STORAGE_KEY = 'bizvanta_chat_history_v2';
-let chats = loadChats();
-let activeChatId = null;
-let currentTopic = '';
-let selectedImage = null;
-let recognition = null;
-let wantsListening = false;
-let restartTimer = null;
+  const $ = (id) => document.getElementById(id);
+  const STORAGE_KEY = "visionta_chat_history_v1";
+  const OLD_STORAGE_KEY = "bizvanta_chat_history_v2";
 
-function loadChats() {
-  try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch (e) {
-    return [];
-  }
-}
+  let chats = [];
+  let activeChatId = null;
+  let pendingImage = null;
+  let isSending = false;
+  let recognition = null;
 
-function saveChats() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-  } catch (e) {
-    setStatus('Browser storage is full. Older chat history may not save.');
-  }
-}
-
-function setStatus(text) {
-  statusEl.textContent = text || '';
-}
-
-function makeId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-}
-
-function autoResize() {
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 150) + 'px';
-}
-input.addEventListener('input', autoResize);
-
-function newChat() {
-  stopRecognition();
-  activeChatId = null;
-  currentTopic = '';
-  selectedImage = null;
-  preview.style.display = 'none';
-  uploadInput.value = '';
-  cameraInput.value = '';
-  document.getElementById('previewImage').removeAttribute('src');
-  messagesEl.replaceChildren();
-  welcome.hidden = false;
-  input.value = '';
-  input.placeholder = 'Message Bizvanta AI...';
-  autoResize();
-  setStatus('');
-  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-  renderHistory();
-}
-
-document.getElementById('newChat').addEventListener('click', newChat);
-document.getElementById('topNewChat').addEventListener('click', newChat);
-
-document.querySelectorAll('.topic-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    newChat();
-    currentTopic = btn.dataset.topic;
-    btn.classList.add('active');
-    input.placeholder = 'Ask about ' + currentTopic + '...';
-    input.focus();
-  });
-});
-
-document.querySelectorAll('.suggestion').forEach(btn => {
-  btn.addEventListener('click', () => {
-    input.value = btn.dataset.prompt || '';
-    autoResize();
-    input.focus();
-  });
-});
-
-document.getElementById('plusBtn').addEventListener('click', () => {
-  attachmentMenu.style.display =
-    attachmentMenu.style.display === 'block' ? 'none' : 'block';
-});
-
-document.getElementById('cameraOption').addEventListener('click', () => {
-  attachmentMenu.style.display = 'none';
-  cameraInput.click();
-});
-
-document.getElementById('uploadOption').addEventListener('click', () => {
-  attachmentMenu.style.display = 'none';
-  uploadInput.click();
-});
-
-function handleImage(file) {
-  if (!file) return;
-
-  if (!file.type.startsWith('image/')) {
-    setStatus('Please choose a valid image file.');
-    return;
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   }
 
-  if (file.size > 25 * 1024 * 1024) {
-    setStatus('This image is too large to process in the browser. Please choose a smaller photo.');
-    return;
+  function safeLoad() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const old = localStorage.getItem(OLD_STORAGE_KEY);
+      const parsed = JSON.parse(saved || old || "[]");
+      chats = Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      chats = [];
+    }
+
+    chats = chats.map(chat => ({
+      id: chat.id || uid(),
+      title: chat.title || "New chat",
+      topic: chat.topic || "Everyday Help",
+      updatedAt: chat.updatedAt || Date.now(),
+      messages: Array.isArray(chat.messages) ? chat.messages : []
+    }));
+
+    if (chats.length) {
+      const latest = [...chats].sort((a, b) => b.updatedAt - a.updatedAt)[0];
+      activeChatId = latest.id;
+    }
   }
 
-  selectedImage = file;
-  const reader = new FileReader();
-
-  reader.onload = () => {
-    document.getElementById('previewImage').src = reader.result;
-    document.getElementById('previewName').textContent =
-      file.name || 'Camera photo selected';
-    preview.style.display = 'flex';
-    setStatus('Image attached. Press Send when ready.');
-  };
-
-  reader.onerror = () => setStatus('Could not read this image. Please try another.');
-  reader.readAsDataURL(file);
-}
-
-uploadInput.addEventListener('change', () => handleImage(uploadInput.files[0]));
-cameraInput.addEventListener('change', () => handleImage(cameraInput.files[0]));
-
-document.getElementById('removeImage').addEventListener('click', () => {
-  selectedImage = null;
-  uploadInput.value = '';
-  cameraInput.value = '';
-  preview.style.display = 'none';
-  document.getElementById('previewImage').removeAttribute('src');
-  setStatus('');
-});
-
-function renderHistory() {
-  const list = document.getElementById('history');
-  list.replaceChildren();
-
-  chats.slice()
-    .sort((a,b) => b.updatedAt - a.updatedAt)
-    .slice(0,30)
-    .forEach(chat => {
-      const btn = document.createElement('button');
-      btn.className = 'history-btn';
-      btn.textContent = '◷ ' + (chat.title || 'New chat');
-      btn.title = btn.textContent;
-      btn.addEventListener('click', () => openChat(chat.id));
-      list.appendChild(btn);
-    });
-}
-
-function ensureChat(firstMessage) {
-  if (activeChatId) {
-    const existing = chats.find(c => c.id === activeChatId);
-    if (existing) return existing;
+  function saveChats() {
+    try {
+      // Keep recent conversations to reduce browser storage problems.
+      const ordered = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ordered.slice(0, 30)));
+    } catch (error) {
+      console.warn("Visionta AI could not save all chat history.", error);
+    }
   }
 
-  const chat = {
-    id: makeId(),
-    title: (firstMessage || 'New chat').slice(0,42),
-    topic: currentTopic,
-    messages: [],
-    updatedAt: Date.now()
-  };
-
-  chats.push(chat);
-  activeChatId = chat.id;
-  saveChats();
-  renderHistory();
-  return chat;
-}
-
-function addMessage(role, text, imageUrl) {
-  const row = document.createElement('div');
-  row.className = 'message ' + role;
-
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  bubble.textContent = String(text ?? '');
-
-  if (imageUrl) {
-    const img = document.createElement('img');
-    img.className = 'message-photo';
-    img.src = imageUrl;
-    img.alt = 'Uploaded image';
-    img.loading = 'lazy';
-    bubble.appendChild(img);
+  function activeChat() {
+    return chats.find(chat => chat.id === activeChatId) || null;
   }
 
-  row.appendChild(bubble);
-  messagesEl.appendChild(row);
-
-  const sc = document.getElementById('chatScroll');
-  sc.scrollTop = sc.scrollHeight;
-  return row;
-}
-
-function openChat(id) {
-  stopRecognition();
-  const chat = chats.find(c => c.id === id);
-  if (!chat) return;
-
-  activeChatId = id;
-  currentTopic = chat.topic || '';
-  welcome.hidden = true;
-  messagesEl.replaceChildren();
-
-  chat.messages.forEach(m => addMessage(m.role, m.text));
-
-  document.querySelectorAll('.topic-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.topic === currentTopic);
-  });
-
-  input.placeholder = currentTopic
-    ? 'Ask about ' + currentTopic + '...'
-    : 'Message Bizvanta AI...';
-  setStatus('');
-}
-
-function loadImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onerror = () => reject(new Error('Could not read the image.'));
-    reader.onload = () => {
-      const img = new Image();
-
-      img.onerror = () => reject(new Error('Could not open this image.'));
-      img.onload = () => {
-        const maxDimension = 1400;
-        const scale = Math.min(
-          1,
-          maxDimension / Math.max(img.naturalWidth, img.naturalHeight)
-        );
-
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Image processing is not supported by this browser.'));
-          return;
-        }
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob(blob => {
-          if (!blob) {
-            reject(new Error('Could not compress image. Please try another photo.'));
-            return;
-          }
-
-          resolve({
-            blob,
-            dataUrl: canvas.toDataURL('image/jpeg', 0.84),
-            mimeType: 'image/jpeg'
-          });
-        }, 'image/jpeg', 0.84);
-      };
-
-      img.src = reader.result;
+  function createChat(topic = "Everyday Help") {
+    const chat = {
+      id: uid(),
+      title: "New chat",
+      topic,
+      updatedAt: Date.now(),
+      messages: []
     };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
-    reader.onerror = () => reject(new Error('Could not prepare image for sending.'));
-    reader.readAsDataURL(file);
-  });
-}
-
-function imageInstructions() {
-  return [
-    'Analyze the attached image carefully.',
-    'If it contains a prescription, handwritten note, receipt, document or simple text, transcribe the visible text as accurately as possible.',
-    'Preserve medicine names, numbers, units, dates and instructions exactly as written.',
-    'Separate clearly readable text from uncertain text. Mark uncertain words as [unclear] instead of guessing.',
-    'For prescriptions, never invent or infer an uncertain medicine name, dose, frequency or duration. Tell the user to confirm unclear medical instructions with a pharmacist or prescribing clinician.',
-    'If the image is a normal photo, describe what is visible.',
-    'Explain the result clearly and state any limitations.'
-  ].join(' ');
-}
-
-async function sendMessage() {
-  const message = input.value.trim();
-
-  if ((!message && !selectedImage) || sendBtn.disabled) return;
-
-  stopRecognition();
-  attachmentMenu.style.display = 'none';
-
-  const imageFile = selectedImage;
-  const chat = ensureChat(message || 'Image question');
-
-  const userMessage = currentTopic
-    ? '[' + currentTopic + '] ' + message
-    : message;
-
-  const displayText =
-    (message ? message + '\n' : '') +
-    (imageFile ? '[Image attached: ' + (imageFile.name || 'Photo') + ']' : '');
-
-  chat.messages.push({
-    role: 'user',
-    text: displayText || 'Image attached'
-  });
-
-  chat.updatedAt = Date.now();
-
-  if (chat.messages.filter(m => m.role === 'user').length === 1) {
-    chat.title = (message || 'Image question').slice(0,42);
+    chats.unshift(chat);
+    activeChatId = chat.id;
+    saveChats();
+    clearPendingImage();
+    $("topicSelect").value = topic;
+    renderHistory();
+    renderMessages();
+    closeSidebar();
+    $("messageInput").focus();
   }
 
-  saveChats();
-  renderHistory();
-  welcome.hidden = true;
+  function renderHistory(filter = "") {
+    const container = $("history");
+    container.replaceChildren();
 
-  const imageUrlForChat = imageFile ? URL.createObjectURL(imageFile) : null;
-  addMessage('user', displayText || 'Image attached', imageUrlForChat);
-
-  input.value = '';
-  autoResize();
-
-  selectedImage = null;
-  uploadInput.value = '';
-  cameraInput.value = '';
-  preview.style.display = 'none';
-  document.getElementById('previewImage').removeAttribute('src');
-
-  sendBtn.disabled = true;
-  setStatus('Preparing your message...');
-  const waiting = addMessage('assistant', 'Thinking...');
-
-  try {
-    let imageData = null;
-    let mimeType = null;
-
-    if (imageFile) {
-      setStatus('Making the image smaller for mobile and laptop...');
-      const processed = await loadImage(imageFile);
-      imageData = await fileToBase64(processed.blob);
-      mimeType = processed.mimeType;
-    }
-
-    const finalMessage = imageFile
-      ? (userMessage || 'Please describe this image.') + '\n\n' + imageInstructions()
-      : userMessage;
-
-    setStatus('Bizvanta AI is thinking...');
-
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        message: finalMessage || 'Hello',
-        image: imageData,
-        mimeType,
-        topic: currentTopic
-      })
+    const query = filter.toLowerCase();
+    const ordered = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
+    const filtered = ordered.filter(chat => {
+      const text = chat.title + " " + chat.messages.map(m => m.text || "").join(" ");
+      return text.toLowerCase().includes(query);
     });
 
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      if (response.status === 413) {
-        throw new Error('Image request is still too large for the backend. The /api/chat server limit must also be checked.');
-      }
-
-      if (response.status === 503) {
-        throw new Error('The AI service is temporarily unavailable or busy. Please try again shortly.');
-      }
-
-      if (response.status === 429) {
-        throw new Error('The AI service quota or rate limit may have been reached. Please check your API usage.');
-      }
-
-      throw new Error(
-        data.error || data.message || ('Request failed (' + response.status + ').')
-      );
+    if (!filtered.length) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:12px 9px;color:#888;font-size:12px";
+      empty.textContent = query ? "No matching chats" : "Your chats will appear here.";
+      container.appendChild(empty);
+      return;
     }
 
-    const answer =
-      data.reply ??
-      data.response ??
-      data.text ??
-      data.message ??
-      (typeof data === 'string' ? data : '');
+    filtered.forEach(chat => {
+      const row = document.createElement("div");
+      row.className = "history-item" + (chat.id === activeChatId ? " active" : "");
 
-    if (!answer) {
-      throw new Error('The server returned an empty response. Check the backend logs.');
+      const title = document.createElement("button");
+      title.className = "history-title";
+      title.style.cssText = "flex:1;min-width:0;text-align:left;border:0;background:transparent;cursor:pointer;color:inherit";
+      title.textContent = chat.title;
+      title.addEventListener("click", () => openChat(chat.id));
+
+      const del = document.createElement("button");
+      del.className = "delete-chat";
+      del.textContent = "×";
+      del.title = "Delete chat";
+      del.setAttribute("aria-label", "Delete chat");
+      del.addEventListener("click", event => {
+        event.stopPropagation();
+        if (!confirm("Delete this conversation?")) return;
+        chats = chats.filter(c => c.id !== chat.id);
+        if (activeChatId === chat.id) activeChatId = chats[0]?.id || null;
+        saveChats();
+        renderHistory();
+        renderMessages();
+      });
+
+      row.append(title, del);
+      container.appendChild(row);
+    });
+  }
+
+  function openChat(id) {
+    activeChatId = id;
+    const chat = activeChat();
+    if (chat) $("topicSelect").value = chat.topic || "Everyday Help";
+    clearPendingImage();
+    renderHistory();
+    renderMessages();
+    closeSidebar();
+  }
+
+  function renderMessages() {
+    const list = $("messageList");
+    list.replaceChildren();
+    const chat = activeChat();
+    $("welcome").style.display = chat && chat.messages.length ? "none" : "block";
+
+    if (!chat) return;
+
+    chat.messages.forEach((message, index) => {
+      const row = document.createElement("div");
+      row.className = "message";
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = message.role === "user" ? "Y" : "V";
+      if (message.role === "user") avatar.style.background = "#777";
+
+      const content = document.createElement("div");
+      content.className = "message-content";
+
+      if (message.imageUrl) {
+        const img = document.createElement("img");
+        img.src = message.imageUrl;
+        img.alt = "Attached image";
+        img.loading = "lazy";
+        content.appendChild(img);
+      }
+
+      const text = document.createElement("div");
+      text.style.whiteSpace = "pre-wrap";
+      text.textContent = message.text || (message.imageUrl ? "" : "");
+      content.appendChild(text);
+
+      if (message.role === "assistant" && message.text) {
+        const actions = document.createElement("div");
+        actions.className = "message-actions";
+
+        const copy = document.createElement("button");
+        copy.textContent = "Copy";
+        copy.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(message.text);
+            copy.textContent = "Copied";
+            setTimeout(() => copy.textContent = "Copy", 1200);
+          } catch {
+            alert("Copy is not available in this browser.");
+          }
+        });
+
+        actions.appendChild(copy);
+        content.appendChild(actions);
+      }
+
+      row.append(avatar, content);
+      list.appendChild(row);
+    });
+
+    if (isSending) {
+      const row = document.createElement("div");
+      row.className = "message";
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = "V";
+      const text = document.createElement("div");
+      text.className = "message-content loading-dots";
+      text.textContent = "Visionta AI is thinking...";
+      row.append(avatar, text);
+      list.appendChild(row);
     }
 
-    waiting.querySelector('.bubble').textContent = String(answer);
-    chat.messages.push({role:'assistant', text:String(answer)});
+    $("messages").scrollTop = $("messages").scrollHeight;
+  }
+
+  function addMessage(role, text, imageUrl = null) {
+    const chat = activeChat();
+    if (!chat) return;
+
+    chat.messages.push({
+      role,
+      text: text || "",
+      imageUrl: imageUrl || null,
+      time: Date.now()
+    });
+
+    if (role === "user" && chat.title === "New chat") {
+      const titleText = (text || "Image conversation").trim();
+      chat.title = titleText.slice(0, 42) + (titleText.length > 42 ? "…" : "");
+    }
+
     chat.updatedAt = Date.now();
     saveChats();
     renderHistory();
-    setStatus('');
-
-  } catch (error) {
-    const details = error && error.message
-      ? error.message
-      : 'Unknown error. Please try again.';
-
-    waiting.querySelector('.bubble').textContent =
-      'Message send nahi ho saka.\n\n' + details;
-
-    setStatus(details);
-  } finally {
-    sendBtn.disabled = false;
-  }
-}
-
-form.addEventListener('submit', event => {
-  event.preventDefault();
-  sendMessage();
-});
-
-input.addEventListener('keydown', event => {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault();
-    form.requestSubmit();
-  }
-});
-
-/* Voice typing with automatic restart when supported by the browser. */
-function stopRecognition() {
-  wantsListening = false;
-
-  if (restartTimer) {
-    clearTimeout(restartTimer);
-    restartTimer = null;
+    renderMessages();
   }
 
-  const old = recognition;
-  recognition = null;
-  micBtn.classList.remove('listening');
-  micBtn.title = 'Voice typing';
-  micBtn.setAttribute('aria-label', 'Voice typing');
-
-  if (old) {
-    old.onend = null;
-    try { old.stop(); } catch (e) {}
+  function openSidebar() {
+    $("sidebar").classList.add("open");
+    $("overlay").classList.add("show");
   }
-}
-
-function startRecognition() {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    wantsListening = false;
-    setStatus('Voice typing is not supported in this browser. Try Chrome.');
-    return;
+  function closeSidebar() {
+    $("sidebar").classList.remove("open");
+    $("overlay").classList.remove("show");
   }
 
-  if (!wantsListening) return;
+  function clearPendingImage() {
+    pendingImage = null;
+    $("imageInput").value = "";
+    $("cameraInput").value = "";
+    $("attachmentPreview").style.display = "none";
+    $("previewImage").removeAttribute("src");
+    updateSendButton();
+  }
 
-  const rec = new SpeechRecognition();
-  recognition = rec;
-  rec.lang = language.value;
-  rec.continuous = true;
-  rec.interimResults = true;
-  rec.maxAlternatives = 1;
+  function updateSendButton() {
+    $("sendButton").disabled =
+      isSending || (!$("messageInput").value.trim() && !pendingImage);
+  }
 
-  let finalText = '';
-  const baseText = input.value.trim()
-    ? input.value.trim() + ' '
-    : '';
+  function resizeTextarea() {
+    const input = $("messageInput");
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 180) + "px";
+  }
 
-  rec.onstart = () => {
-    if (recognition !== rec) return;
-    micBtn.classList.add('listening');
-    micBtn.title = 'Listening — click to stop';
-    micBtn.setAttribute('aria-label', 'Stop voice typing');
-    setStatus('Listening... Tap the mic again to stop.');
-  };
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Image could not be read."));
+      reader.readAsDataURL(file);
+    });
+  }
 
-  rec.onresult = event => {
-    if (recognition !== rec) return;
-    let interim = '';
+  async function compressImage(file) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      throw new Error("Please choose a JPG, PNG or WEBP image.");
+    }
 
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        finalText += transcript.trim() + ' ';
-      } else {
-        interim += transcript;
+    const source = await fileToDataUrl(file);
+    const img = new Image();
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error("This image could not be opened."));
+      img.src = source;
+    });
+
+    const maxSide = 1000;
+    const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * ratio));
+    canvas.height = Math.max(1, Math.round(img.height * ratio));
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // JPEG compression helps keep the request small enough for hosting limits.
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.72);
+    const base64 = dataUrl.split(",")[1];
+
+    if (base64.length > 2_700_000) {
+      throw new Error("This image is still too large. Please choose a smaller image.");
+    }
+
+    return { dataUrl, base64, mimeType: "image/jpeg" };
+  }
+
+  async function handleImage(file) {
+    if (!file) return;
+
+    try {
+      $("fileInfo").textContent = "Preparing image...";
+      $("attachmentPreview").style.display = "flex";
+      const result = await compressImage(file);
+      pendingImage = result;
+      $("previewImage").src = result.dataUrl;
+      $("fileInfo").textContent = "Image ready to send";
+      updateSendButton();
+    } catch (error) {
+      clearPendingImage();
+      alert(error.message || "Could not prepare this image.");
+    }
+  }
+
+  async function sendMessage() {
+    if (isSending) return;
+
+    const text = $("messageInput").value.trim();
+    const image = pendingImage;
+    if (!text && !image) return;
+
+    if (!activeChat()) createChat($("topicSelect").value);
+    const chat = activeChat();
+    const topic = $("topicSelect").value;
+
+    // Send the latest image again on follow-up turns so the model can refer to it.
+    let imageForRequest = image;
+    if (!imageForRequest) {
+      const previousImage = [...chat.messages].reverse().find(m => m.role === "user" && m.imageBase64);
+      if (previousImage) {
+        imageForRequest = {
+          base64: previousImage.imageBase64,
+          mimeType: previousImage.mimeType || "image/jpeg",
+          dataUrl: previousImage.imageUrl
+        };
       }
     }
 
-    input.value = baseText + finalText + interim;
-    autoResize();
-  };
+    $("messageInput").value = "";
+    resizeTextarea();
+    clearPendingImage();
 
-  rec.onerror = event => {
-    if (recognition !== rec) return;
+    const userMessage = {
+      role: "user",
+      text,
+      imageUrl: image ? image.dataUrl : null,
+      imageBase64: image ? image.base64 : null,
+      mimeType: image ? image.mimeType : null,
+      time: Date.now()
+    };
 
-    if (event.error === 'not-allowed' ||
-        event.error === 'service-not-allowed') {
-      wantsListening = false;
-      setStatus('Microphone permission is blocked. Allow it in browser settings.');
-    } else if (event.error === 'audio-capture') {
-      wantsListening = false;
-      setStatus('No microphone detected. Check your microphone.');
-    } else if (event.error === 'network') {
-      setStatus('Speech recognition network error. Check your internet.');
+    chat.messages.push(userMessage);
+    if (chat.title === "New chat") {
+      const titleText = text || "Image conversation";
+      chat.title = titleText.slice(0, 42) + (titleText.length > 42 ? "…" : "");
     }
-  };
+    chat.topic = topic;
+    chat.updatedAt = Date.now();
+    saveChats();
+    renderHistory();
 
-  rec.onend = () => {
-    if (recognition !== rec) return;
+    isSending = true;
+    updateSendButton();
+    renderMessages();
 
-    micBtn.classList.remove('listening');
+    try {
+      const body = {
+        message: text,
+        topic,
+        image: imageForRequest ? imageForRequest.base64 : null,
+        mimeType: imageForRequest ? imageForRequest.mimeType : null
+      };
 
-    if (wantsListening) {
-      setStatus('Restarting microphone...');
-      recognition = null;
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
 
-      restartTimer = setTimeout(() => {
-        restartTimer = null;
-        if (wantsListening) startRecognition();
-      }, 700);
-    } else {
-      recognition = null;
-      micBtn.title = 'Voice typing';
-      micBtn.setAttribute('aria-label', 'Voice typing');
-      setStatus(finalText.trim() ? 'Voice text ready. Review and press Send.' : '');
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Server returned an invalid response. Please try again.");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || `Request failed (${response.status}).`);
+      }
+
+      const reply = data.reply ?? data.response ?? data.text ?? data.message;
+      if (!reply) throw new Error("AI returned an empty answer. Please try again.");
+
+      chat.messages.push({
+        role: "assistant",
+        text: String(reply),
+        time: Date.now()
+      });
+      chat.updatedAt = Date.now();
+      saveChats();
+    } catch (error) {
+      chat.messages.push({
+        role: "assistant",
+        text: "I couldn't complete that request.\n\n" +
+          (error.message || "Please try again in a moment.") +
+          "\n\nIf this keeps happening, check your Vercel deployment logs and Gemini API status.",
+        time: Date.now(),
+        isError: true
+      });
+      saveChats();
+    } finally {
+      isSending = false;
+      updateSendButton();
+      renderHistory();
+      renderMessages();
+      $("messageInput").focus();
     }
-  };
-
-  try {
-    rec.start();
-  } catch (e) {
-    if (recognition === rec) recognition = null;
-
-    restartTimer = setTimeout(() => {
-      restartTimer = null;
-      if (wantsListening) startRecognition();
-    }, 1000);
   }
-}
 
-micBtn.addEventListener('click', () => {
-  if (wantsListening) {
-    stopRecognition();
-    setStatus('Voice typing stopped. Review your text and press Send.');
-  } else {
-    wantsListening = true;
-    startRecognition();
+  function setupVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice typing is not supported in this browser. Try Chrome or Edge.");
+      return;
+    }
+
+    if (recognition) {
+      recognition.stop();
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || "en-US";
+
+    $("voiceButton").classList.add("listening");
+    $("voiceButton").textContent = "●";
+
+    recognition.onresult = event => {
+      let transcript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      $("messageInput").value = transcript;
+      resizeTextarea();
+      updateSendButton();
+    };
+
+    recognition.onerror = () => {};
+    recognition.onend = () => {
+      recognition = null;
+      $("voiceButton").classList.remove("listening");
+      $("voiceButton").textContent = "🎙";
+    };
+
+    recognition.start();
   }
-});
 
-language.addEventListener('change', () => {
-  if (wantsListening) {
-    stopRecognition();
-    wantsListening = true;
-    startRecognition();
+  $("newChat").addEventListener("click", () => createChat());
+  $("openSidebar").addEventListener("click", openSidebar);
+  $("closeSidebar").addEventListener("click", closeSidebar);
+  $("overlay").addEventListener("click", closeSidebar);
+
+  $("attachButton").addEventListener("click", () => $("imageInput").click());
+  $("cameraButton").addEventListener("click", () => $("cameraInput").click());
+  $("imageInput").addEventListener("change", event => handleImage(event.target.files[0]));
+  $("cameraInput").addEventListener("change", event => handleImage(event.target.files[0]));
+  $("removeImage").addEventListener("click", clearPendingImage);
+  $("voiceButton").addEventListener("click", setupVoice);
+  $("sendButton").addEventListener("click", sendMessage);
+
+  $("messageInput").addEventListener("input", () => {
+    resizeTextarea();
+    updateSendButton();
+  });
+
+  $("messageInput").addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  document.querySelectorAll(".suggestion").forEach(button => {
+    button.addEventListener("click", () => {
+      $("messageInput").value = button.dataset.prompt || "";
+      resizeTextarea();
+      updateSendButton();
+      $("messageInput").focus();
+    });
+  });
+
+  document.querySelectorAll(".topic-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const topic = button.dataset.topic;
+      $("topicSelect").value = topic;
+      createChat(topic);
+    });
+  });
+
+  $("searchHistory").addEventListener("click", () => {
+    const query = prompt("Search your chat history:");
+    if (query !== null) renderHistory(query.trim());
+  });
+
+  $("modelButton").addEventListener("click", () => {
+    alert("Visionta AI\nYour personal AI assistant, powered by your configured Gemini backend.");
+  });
+
+  safeLoad();
+  if (!activeChatId) createChat();
+  else {
+    renderHistory();
+    renderMessages();
+    const chat = activeChat();
+    if (chat) $("topicSelect").value = chat.topic || "Everyday Help";
   }
-});
-
-document.addEventListener('click', event => {
-  if (!attachmentMenu.contains(event.target) &&
-      event.target.id !== 'plusBtn') {
-    attachmentMenu.style.display = 'none';
-  }
-});
-
-renderHistory();
+  updateSendButton();
+})();
 </script>
 </body>
 </html>
