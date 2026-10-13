@@ -5,597 +5,512 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bizvanta AI</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#202123}
-button{font-family:inherit}
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:260px;background:#f7f7f8;padding:14px;display:flex;flex-direction:column;flex-shrink:0}
-.brand{font-size:23px;font-weight:700;padding:12px 8px 24px}
-.brand span{color:#0d9488}
-.newchat{border:1px solid #ddd;background:white;text-align:left;padding:12px;border-radius:10px;cursor:pointer;margin-bottom:18px}
-.nav{display:flex;flex-direction:column;gap:4px}
-.nav button{background:transparent;border:0;text-align:left;padding:11px 9px;border-radius:9px;font-size:13px;cursor:pointer;color:#333}
-.nav button:hover,.newchat:hover,.history-item:hover{background:#e9e9eb}
-.nav button span{display:inline-block;width:26px;font-size:17px}
-.section-label{font-size:11px;color:#777;padding:20px 8px 8px;letter-spacing:.7px}
-.history{flex:1;overflow-y:auto;min-height:50px}
-.history-row{display:flex;align-items:center;border-radius:8px}
-.history-item{display:flex;gap:8px;align-items:center;flex:1;min-width:0;padding:10px 8px;background:transparent;border:0;text-align:left;cursor:pointer;border-radius:8px;font-size:13px}
-.history-item.active{background:#e5e5e9}
-.history-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.delete-chat{border:0;background:transparent;color:#777;cursor:pointer;padding:6px}
-.sidebottom{font-size:12px;color:#777;padding:12px 5px}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
-.topbar{height:52px;display:flex;align-items:center;padding:0 24px;font-weight:600;border-bottom:1px solid #f0f0f0}
-.chat{flex:1;overflow-y:auto;padding:20px 16px 190px}
-.welcome{max-width:800px;margin:12vh auto 0;text-align:center}
-.welcome-title{font-size:30px;font-weight:400;margin:0 0 34px}
-.quick-actions{display:flex;flex-direction:column;gap:7px;max-width:800px;margin:32px auto 0}
-.quick-action{display:flex;align-items:center;gap:14px;border:0;background:transparent;text-align:left;padding:10px 18px;border-radius:10px;color:#777;font-size:16px;cursor:pointer}
-.quick-action:hover{background:#f6f6f6;color:#222}
-.quick-action .symbol{width:22px;font-size:20px}
-.message{max-width:760px;margin:18px auto;padding:12px 16px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
-.message.user{background:#f2f2f2;border-radius:18px;width:fit-content;max-width:85%;margin-right:max(0px,calc((100% - 760px)/2))}
-.message.assistant{background:white}
-.message img{display:block;max-width:100%;max-height:320px;border-radius:12px;margin-top:10px}
-.composer-wrap{position:absolute;bottom:0;left:0;right:0;padding:18px 20px;background:linear-gradient(transparent,#fff 20%)}
-.composer{position:relative;max-width:850px;margin:auto;border:1px solid #dedede;border-radius:28px;padding:8px 12px;background:#fff;box-shadow:0 3px 14px #0000000a}
-.composer-row{display:flex;align-items:center;gap:8px}
-#message{flex:1;width:100%;min-width:0;resize:none;border:0;outline:0;background:transparent;font:16px Arial;padding:10px 4px;min-height:38px;max-height:140px}
-.controls{display:flex;align-items:center;gap:5px;flex-shrink:0;position:relative}
-.iconbtn{width:38px;height:38px;border:0;border-radius:50%;background:transparent;cursor:pointer;font-size:21px;color:#555}
-.iconbtn:hover{background:#f0f0f0}
-.iconbtn.listening{background:#fee2e2;color:#c62828}
-.sendbtn{width:40px;height:40px;border:0;border-radius:50%;background:#202123;color:white;font-size:23px;cursor:pointer}
-.sendbtn:disabled{opacity:.5}
-#fileInput,#cameraInput{display:none}
-#previewWrap{display:none;position:relative;width:max-content;margin:6px 0 8px}
-#preview{display:block;max-width:120px;max-height:95px;border-radius:10px}
-#removeImage{position:absolute;right:-7px;top:-7px;border:0;border-radius:50%;width:23px;height:23px;background:#222;color:white;cursor:pointer}
-.camera-menu{display:none;position:absolute;right:85px;bottom:50px;width:205px;background:#fff;border:1px solid #e2e2e2;border-radius:13px;padding:6px;box-shadow:0 5px 25px #00000018;z-index:10}
-.camera-menu button{display:block;width:100%;border:0;background:white;border-radius:8px;padding:12px;text-align:left;cursor:pointer;font-size:14px}
-.camera-menu button:hover{background:#f2f2f2}
-.hint{text-align:center;color:#888;font-size:11px;margin-top:9px}
-@media(max-width:650px){
-.sidebar{width:72px;padding:8px}
-.brand{font-size:0;padding:12px 4px 20px}
-.brand:after{content:"B";font-size:22px;color:#0d9488}
-.newchat{font-size:0;text-align:center;padding:12px 2px}
-.newchat:after{content:"＋";font-size:20px}
-.nav button{font-size:0;text-align:center;padding:12px 2px}
-.nav button span{font-size:19px;width:auto}
-.section-label{font-size:0;padding:10px 0}
-.history-title,.delete-chat{display:none}
-.history-item{padding:10px 3px}
-.sidebottom{font-size:0;padding:4px}
-.topbar{padding:0 12px}
-.chat{padding:12px 7px 160px}
-.welcome{margin-top:8vh}
-.welcome-title{font-size:25px}
-.quick-action{font-size:14px;padding:10px 8px}
-.composer-wrap{padding:12px 8px}
-.composer{padding:7px 8px}
-.composer-row{gap:3px}
-#message{font-size:15px}
-.iconbtn{width:33px;height:36px;font-size:19px}
-.sendbtn{width:37px;height:37px}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #222;
+  background: #fff;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background: #f7f7f8;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h2 { margin: 8px 0 20px; }
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sidebar button:hover { background: #e8e8e8; }
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  padding: 18px;
+  border-bottom: 1px solid #eee;
+  font-weight: bold;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+}
+
+.welcome {
+  text-align: center;
+  margin: 12vh auto 25px;
+}
+
+.welcome h1 { font-size: 30px; font-weight: 500; }
+
+.quick-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-actions button {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.messages {
+  max-width: 750px;
+  margin: auto;
+}
+
+.message {
+  padding: 12px 15px;
+  margin: 14px 0;
+  border-radius: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.user {
+  background: #f1f1f1;
+  margin-left: auto;
+  max-width: 85%;
+  width: fit-content;
+}
+
+.assistant { line-height: 1.6; }
+
+.assistant img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 10px;
+}
+
+.composer-area {
+  padding: 12px 18px 20px;
+}
+
+.composer-wrap {
+  max-width: 780px;
+  margin: auto;
+}
+
+.attachments {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preview {
+  width: 65px;
+  height: 65px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.composer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  border: 1px solid #ddd;
+  border-radius: 26px;
+  padding: 8px;
+  background: white;
+}
+
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  padding: 10px 4px;
+  font: inherit;
+  max-height: 150px;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.icon-button:hover { background: #eee; }
+
+.plus-menu {
+  display: none;
+  position: absolute;
+  bottom: 50px;
+  left: 5px;
+  width: 210px;
+  padding: 7px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 5px 20px #0002;
+  z-index: 5;
+}
+
+.plus-menu button {
+  width: 100%;
+  border: 0;
+  background: white;
+  padding: 12px;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.plus-menu button:hover { background: #f1f1f1; }
+
+.send {
+  background: #222;
+  color: white;
+}
+
+.note {
+  text-align: center;
+  font-size: 11px;
+  color: #888;
+  margin-top: 8px;
+}
+
+.hidden { display: none; }
+
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .welcome h1 { font-size: 25px; }
+  .quick-actions { flex-direction: column; }
+  .composer-area { padding: 8px 10px 14px; }
 }
 </style>
 </head>
+
 <body>
 <div class="app">
-<aside class="sidebar">
-  <div class="brand">Bizvanta <span>AI</span></div>
-  <button class="newchat" id="newChat">＋ &nbsp; New Chat</button>
 
-  <div class="nav">
-    <button data-topic="Images & Photos"><span>▧</span> Images</button>
-    <button data-topic="Study & Learning"><span>▤</span> Study & Learning</button>
-    <button data-topic="Health & Medicine"><span>♡</span> Health & Medicine</button>
-    <button data-topic="Everyday Help"><span>✧</span> Everyday Help</button>
-    <button data-topic="Writing & Translation"><span>文</span> Writing & Translation</button>
-    <button data-topic="Planning"><span>▦</span> Planning</button>
-    <button data-topic="Business Ideas"><span>◈</span> Business Ideas</button>
-    <button data-topic="Business Advisor"><span>▣</span> Business Advisor</button>
-    <button data-topic="Marketing & Sales"><span>↗</span> Marketing & Sales</button>
-  </div>
+  <aside class="sidebar">
+    <h2>Bizvanta <span style="color:#10a37f">AI</span></h2>
+    <button onclick="newChat()">＋ New chat</button>
+    <button onclick="setTopic('Images')">▧ Images</button>
+    <button onclick="setTopic('Study & Learning')">▤ Study & Learning</button>
+    <button onclick="setTopic('Everyday Help')">◉ Everyday Help</button>
+    <button onclick="setTopic('Writing & Translation')">✎ Writing & Translation</button>
+    <button onclick="setTopic('Planning')">▦ Planning</button>
+    <button onclick="setTopic('Business Ideas')">◇ Business Ideas</button>
+    <button onclick="setTopic('Business Advisor')">▥ Business Advisor</button>
+    <button onclick="setTopic('Marketing & Sales')">↗ Marketing & Sales</button>
+    <p>Recent chats</p>
+    <div id="history"></div>
+  </aside>
 
-  <div class="section-label">RECENT CHATS</div>
-  <div class="history" id="history"></div>
-  <div class="sidebottom">Your business partner, powered by AI.</div>
-</aside>
+  <main class="main">
+    <div class="topbar">Bizvanta AI ⌄</div>
 
-<section class="main">
-  <div class="topbar" id="topbar">Bizvanta AI</div>
-  <div class="chat" id="chat"></div>
-
-  <div class="composer-wrap">
-    <div class="composer">
-      <div id="previewWrap">
-        <img id="preview" alt="Image preview">
-        <button id="removeImage" title="Remove image">×</button>
+    <section class="content" id="content">
+      <div class="welcome" id="welcome">
+        <h1>Ready when you are.</h1>
+        <p>What would you like to work on today?</p>
       </div>
 
-      <div class="composer-row">
-        <button class="iconbtn" id="plusBtn" title="Upload image">＋</button>
-        <textarea id="message" rows="1" placeholder="Message Bizvanta AI..."></textarea>
+      <div class="quick-actions" id="quickActions">
+        <button onclick="suggest('Help me create an image or sticker.')">
+          ▧ Create an image or sticker
+        </button>
+        <button onclick="suggest('Help me write or edit something.')">
+          ✎ Write or edit
+        </button>
+        <button onclick="suggest('Help me with my business idea.')">
+          ◇ Business ideas
+        </button>
+      </div>
 
-        <div class="controls">
-          <button class="iconbtn" id="cameraBtn" title="Camera options">📷</button>
-          <button class="iconbtn" id="micBtn" title="Speak">🎙️</button>
-          <input id="fileInput" type="file" accept="image/*">
-          <input id="cameraInput" type="file" accept="image/*" capture="environment">
-          <button class="sendbtn" id="sendBtn" title="Send">↑</button>
+      <div class="messages" id="messages"></div>
+    </section>
 
-          <div id="cameraMenu" class="camera-menu">
-            <button id="uploadPhotoBtn">▧ &nbsp; Upload a photo</button>
-            <button id="takePhotoBtn">📷 &nbsp; Take a photo</button>
+    <footer class="composer-area">
+      <div class="composer-wrap">
+        <div class="attachments" id="attachments"></div>
+
+        <div class="composer">
+          <button class="icon-button" id="plusButton">＋</button>
+
+          <div class="plus-menu" id="plusMenu">
+            <button id="uploadButton">▧ &nbsp; Upload a photo</button>
+            <button id="cameraButton">📷 &nbsp; Take a photo</button>
+            <button id="fileButton">📎 &nbsp; Upload a file</button>
           </div>
+
+          <textarea id="messageInput" rows="1"
+            placeholder="Message Bizvanta AI..."></textarea>
+
+          <button class="icon-button" id="micButton"
+            title="Voice typing">🎙</button>
+
+          <button class="icon-button send" id="sendButton"
+            title="Send">↑</button>
+
+          <input class="hidden" id="imageInput" type="file" accept="image/*">
+          <input class="hidden" id="cameraInput" type="file"
+            accept="image/*" capture="environment">
+          <input class="hidden" id="fileInput" type="file">
+        </div>
+
+        <div class="note">
+          Bizvanta AI can make mistakes. Check important information.
         </div>
       </div>
-    </div>
-    <div class="hint">AI can make mistakes. Check important information.</div>
-  </div>
-</section>
+    </footer>
+  </main>
 </div>
 
 <script>
-const chat = document.getElementById("chat");
-const historyEl = document.getElementById("history");
-const input = document.getElementById("message");
-const fileInput = document.getElementById("fileInput");
-const cameraInput = document.getElementById("cameraInput");
-const previewWrap = document.getElementById("previewWrap");
-const preview = document.getElementById("preview");
-const sendBtn = document.getElementById("sendBtn");
-const micBtn = document.getElementById("micBtn");
-const cameraMenu = document.getElementById("cameraMenu");
-const topbar = document.getElementById("topbar");
+const $ = id => document.getElementById(id);
 
-const STORAGE_KEY = "bizvanta_chat_history_v2";
-let chats = loadChats();
-let currentChatId = null;
-let currentTopic = "";
-let selectedFile = null;
-let busy = false;
-let recognition = null;
-let listening = false;
-let speechBaseText = "";
+let topic = "Business Advisor";
+let selectedImage = null;
+let chats = [];
 
-function loadChats(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(saved) ? saved : [];
-  }catch(e){ return []; }
+try {
+  chats = JSON.parse(localStorage.getItem("bizvanta_chats") || "[]");
+} catch (e) {}
+
+function setTopic(name) {
+  topic = name;
+  $("messageInput").placeholder = "Message Bizvanta AI about " + name + "...";
+  $("messageInput").focus();
 }
 
-function saveChats(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-  }catch(e){
-    alert("Chat storage full. Delete some old chats.");
-  }
+function suggest(text) {
+  $("messageInput").value = text;
+  $("messageInput").focus();
+}
+
+function newChat() {
+  $("messages").innerHTML = "";
+  $("welcome").style.display = "";
+  $("quickActions").style.display = "";
+  $("messageInput").value = "";
+  selectedImage = null;
+  $("attachments").innerHTML = "";
+}
+
+function saveChat(title, userText, reply) {
+  chats.push({ title, userText, reply, time: Date.now() });
+  localStorage.setItem("bizvanta_chats", JSON.stringify(chats));
   renderHistory();
 }
 
-function makeId(){
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-}
+function renderHistory() {
+  const history = $("history");
+  history.innerHTML = "";
 
-function getCurrentChat(){
-  return chats.find(c => c.id === currentChatId) || null;
-}
-
-function makeWelcome(){
-  const wrap = document.createElement("div");
-  wrap.className = "welcome";
-
-  const title = document.createElement("h1");
-  title.className = "welcome-title";
-  title.textContent = "Ready when you are.";
-  wrap.appendChild(title);
-
-  const actions = document.createElement("div");
-  actions.className = "quick-actions";
-
-  [
-    ["▧","Create an image or sticker","Images & Photos"],
-    ["✎","Write or edit","Writing & Translation"],
-    ["◎","Search the web","Everyday Help"]
-  ].forEach(([symbol,label,topic])=>{
-    const btn = document.createElement("button");
-    btn.className = "quick-action";
-    const icon = document.createElement("span");
-    icon.className = "symbol";
-    icon.textContent = symbol;
-    const text = document.createElement("span");
-    text.textContent = label;
-    btn.append(icon,text);
-    btn.onclick = ()=>{
-      currentTopic = topic;
-      input.placeholder = "Ask about " + topic + "...";
-      input.focus();
+  chats.slice().reverse().forEach(chat => {
+    const button = document.createElement("button");
+    button.textContent = "◷ " + chat.title;
+    button.onclick = () => {
+      $("messages").innerHTML = "";
+      $("welcome").style.display = "none";
+      $("quickActions").style.display = "none";
+      addMessage("user", chat.userText);
+      addMessage("assistant", chat.reply);
     };
-    actions.appendChild(btn);
-  });
-
-  wrap.appendChild(actions);
-  return wrap;
-}
-
-function renderHistory(){
-  historyEl.innerHTML = "";
-  chats.slice().sort((a,b)=>b.updatedAt-a.updatedAt).forEach(c=>{
-    const row = document.createElement("div");
-    row.className = "history-row";
-
-    const btn = document.createElement("button");
-    btn.className = "history-item" + (c.id===currentChatId ? " active":"");
-    const icon = document.createElement("span");
-    icon.textContent = "▤";
-    const title = document.createElement("span");
-    title.className = "history-title";
-    title.textContent = c.title || "New chat";
-    btn.append(icon,title);
-    btn.onclick = ()=>openChat(c.id);
-
-    const del = document.createElement("button");
-    del.className = "delete-chat";
-    del.textContent = "×";
-    del.title = "Delete chat";
-    del.onclick = e=>{
-      e.stopPropagation();
-      deleteChat(c.id);
-    };
-
-    row.append(btn,del);
-    historyEl.appendChild(row);
+    history.appendChild(button);
   });
 }
 
-function createChat(){
-  const c = {
-    id:makeId(),
-    title:"New chat",
-    messages:[],
-    updatedAt:Date.now(),
-    topic:""
-  };
-  chats.push(c);
-  currentChatId = c.id;
-  currentTopic = "";
-  input.value = "";
-  input.placeholder = "Message Bizvanta AI...";
-  clearSelectedImage();
-  showEmptyChat();
-  saveChats();
-  input.focus();
-}
+function addMessage(role, text, imageUrl = null) {
+  $("welcome").style.display = "none";
+  $("quickActions").style.display = "none";
 
-function showEmptyChat(){
-  chat.innerHTML = "";
-  chat.appendChild(makeWelcome());
-  topbar.textContent = "Bizvanta AI";
-}
-
-function openChat(id){
-  const c = chats.find(x=>x.id===id);
-  if(!c) return;
-  currentChatId = id;
-  currentTopic = c.topic || "";
-  input.value = "";
-  clearSelectedImage();
-  chat.innerHTML = "";
-
-  if(!c.messages.length){
-    chat.appendChild(makeWelcome());
-  }else{
-    c.messages.forEach(m=>addMessage(m.text,m.role,m.imageData||null));
-  }
-
-  topbar.textContent = c.title==="New chat" ? "Bizvanta AI" : c.title;
-  input.placeholder = currentTopic ? "Ask about "+currentTopic+"..." : "Message Bizvanta AI...";
-  renderHistory();
-}
-
-function deleteChat(id){
-  const c = chats.find(x=>x.id===id);
-  if(!c || !confirm('Delete "'+c.title+'"?')) return;
-  chats = chats.filter(x=>x.id!==id);
-
-  if(currentChatId===id){
-    currentChatId = null;
-    if(chats.length){
-      openChat(chats.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0].id);
-    }else{
-      createChat();
-    }
-  }else{
-    saveChats();
-  }
-}
-
-function addMessage(text,role,imageData){
   const div = document.createElement("div");
   div.className = "message " + role;
 
-  if(text){
-    const t = document.createElement("div");
-    t.textContent = text;
-    div.appendChild(t);
-  }
-
-  if(imageData){
+  if (imageUrl) {
     const img = document.createElement("img");
-    img.src = imageData;
-    img.alt = "Uploaded image";
+    img.src = imageUrl;
     div.appendChild(img);
   }
 
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-  return div;
-}
-
-function saveMessage(text,role,imageData=null){
-  const c = getCurrentChat();
-  if(!c) return;
-
-  c.messages.push({
-    text,role,imageData,createdAt:Date.now()
-  });
-
-  if(c.title==="New chat" && (text || imageData)){
-    c.title = (text || "Image question").trim().slice(0,42) || "New chat";
+  if (text) {
+    const p = document.createElement("div");
+    p.textContent = text;
+    div.appendChild(p);
   }
 
-  c.updatedAt = Date.now();
-  c.topic = currentTopic;
-  topbar.textContent = c.title==="New chat" ? "Bizvanta AI" : c.title;
-  saveChats();
+  $("messages").appendChild(div);
+  $("content").scrollTop = $("content").scrollHeight;
 }
 
-function clearSelectedImage(){
-  selectedFile = null;
-  preview.removeAttribute("src");
-  previewWrap.style.display = "none";
-  fileInput.value = "";
-  cameraInput.value = "";
-}
-
-function chooseImage(file){
-  if(!file) return;
-  if(!file.type.startsWith("image/")){
-    alert("Please select an image.");
-    return;
-  }
-  if(file.size > 8*1024*1024){
-    alert("Please choose an image smaller than 8 MB.");
-    return;
-  }
-  selectedFile = file;
-  preview.src = URL.createObjectURL(file);
-  previewWrap.style.display = "block";
-}
-
-function fileToDataURL(file){
-  return new Promise((resolve,reject)=>{
-    const reader = new FileReader();
-    reader.onload = ()=>resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function dataURLToBase64(url){
-  return url.split(",")[1] || "";
-}
-
-document.getElementById("plusBtn").onclick = ()=>fileInput.click();
-fileInput.onchange = ()=>{
-  chooseImage(fileInput.files[0]);
-  fileInput.value = "";
-};
-cameraInput.onchange = ()=>{
-  chooseImage(cameraInput.files[0]);
-  cameraInput.value = "";
+$("plusButton").onclick = event => {
+  event.stopPropagation();
+  const menu = $("plusMenu");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
 };
 
-document.getElementById("removeImage").onclick = clearSelectedImage;
+$("plusMenu").onclick = event => event.stopPropagation();
 
-document.getElementById("cameraBtn").onclick = e=>{
-  e.stopPropagation();
-  cameraMenu.style.display = cameraMenu.style.display==="block" ? "none" : "block";
-};
-document.getElementById("uploadPhotoBtn").onclick = ()=>{
-  cameraMenu.style.display = "none";
-  fileInput.click();
-};
-document.getElementById("takePhotoBtn").onclick = ()=>{
-  cameraMenu.style.display = "none";
-  cameraInput.click();
-};
-document.addEventListener("click",e=>{
-  if(!cameraMenu.contains(e.target) && e.target.id!=="cameraBtn"){
-    cameraMenu.style.display = "none";
-  }
+document.addEventListener("click", () => {
+  $("plusMenu").style.display = "none";
 });
 
-document.getElementById("newChat").onclick = createChat;
+$("uploadButton").onclick = () => {
+  $("plusMenu").style.display = "none";
+  $("imageInput").click();
+};
 
-document.querySelectorAll("[data-topic]").forEach(button=>{
-  button.onclick = ()=>{
-    currentTopic = button.dataset.topic;
-    input.placeholder = "Ask about "+currentTopic+"...";
-    const c = getCurrentChat();
-    if(c){
-      c.topic = currentTopic;
-      saveChats();
-    }
-    input.focus();
+$("cameraButton").onclick = () => {
+  $("plusMenu").style.display = "none";
+  $("cameraInput").click();
+};
+
+$("fileButton").onclick = () => {
+  $("plusMenu").style.display = "none";
+  $("fileInput").click();
+};
+
+function showImage(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = event => {
+    selectedImage = event.target.result;
+    $("attachments").innerHTML = "";
+
+    const img = document.createElement("img");
+    img.className = "preview";
+    img.src = selectedImage;
+
+    const remove = document.createElement("button");
+    remove.textContent = "×";
+    remove.onclick = () => {
+      selectedImage = null;
+      $("attachments").innerHTML = "";
+    };
+
+    $("attachments").append(img, remove);
   };
-});
 
-async function sendMessage(){
-  if(busy) return;
-  const text = input.value.trim();
-  const file = selectedFile;
-  if(!text && !file) return;
+  reader.readAsDataURL(file);
+}
 
-  if(!currentChatId || !getCurrentChat()) createChat();
+$("imageInput").onchange = e => showImage(e.target.files[0]);
+$("cameraInput").onchange = e => showImage(e.target.files[0]);
 
-  const welcome = chat.querySelector(".welcome");
-  if(welcome) chat.innerHTML = "";
+$("fileInput").onchange = e => {
+  const file = e.target.files[0];
+  if (file) alert("Selected file: " + file.name);
+};
 
-  busy = true;
-  sendBtn.disabled = true;
+$("sendButton").onclick = async () => {
+  const text = $("messageInput").value.trim();
 
-  try{
-    let imageData = null;
-    let image = null;
-    let mimeType = null;
+  if (!text && !selectedImage) {
+    alert("Please type a message or choose a photo.");
+    return;
+  }
 
-    if(file){
-      imageData = await fileToDataURL(file);
-      image = dataURLToBase64(imageData);
-      mimeType = file.type;
-    }
+  const imageToSend = selectedImage;
+  addMessage("user", text, imageToSend);
 
-    addMessage(text,"user",imageData);
-    saveMessage(text,"user",imageData);
-    input.value = "";
-    clearSelectedImage();
+  $("messageInput").value = "";
+  selectedImage = null;
+  $("attachments").innerHTML = "";
 
-    const loading = addMessage("Thinking...","assistant");
+  addMessage("assistant", "Thinking...");
 
-    const response = await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        message:text || "Please describe this image and read any visible text.",
-        image,
-        mimeType,
-        topic:currentTopic
+  const all = $("messages").querySelectorAll(".assistant");
+  const thinking = all[all.length - 1];
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: text || "Please examine this image.",
+        image: imageToSend ? imageToSend.split(",")[1] : null,
+        mimeType: imageToSend ? imageToSend.split(";")[0].split(":")[1] : null,
+        topic: topic
       })
     });
 
-    let data;
-    try{
-      data = await response.json();
-    }catch(e){
-      throw new Error("Invalid server response");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Server error");
     }
 
-    loading.remove();
+    const reply = data.reply || data.response || "No reply received.";
+    thinking.textContent = reply;
+    saveChat(text || "Image question", text, reply);
 
-    if(!response.ok){
-      const errorText = data.error || "Request failed. Please try again.";
-      addMessage(errorText,"assistant");
-      saveMessage(errorText,"assistant");
-      return;
-    }
-
-    const reply = data.reply || "No answer received.";
-    addMessage(reply,"assistant");
-    saveMessage(reply,"assistant");
-
-  }catch(e){
-    console.error(e);
-    const errorText = "Connection error. Check that the server is running, then try again.";
-    addMessage(errorText,"assistant");
-    saveMessage(errorText,"assistant");
-  }finally{
-    busy = false;
-    sendBtn.disabled = false;
-    input.focus();
+  } catch (error) {
+    thinking.textContent =
+      "Could not connect to the AI backend. Please check your Vercel /api/chat setup. " +
+      error.message;
   }
-}
+};
 
-sendBtn.onclick = sendMessage;
-
-input.addEventListener("keydown",e=>{
-  if(e.key==="Enter" && !e.shiftKey){
-    e.preventDefault();
-    sendMessage();
+$("messageInput").addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    $("sendButton").click();
   }
 });
 
-// Microphone: voice-to-text
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-if(SpeechRecognition){
-  recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = "ur-PK";
+$("micButton").onclick = () => {
+  if (!Speech) {
+    alert("Voice typing is not supported in this browser. Try Chrome.");
+    return;
+  }
 
-  let finalTranscript = "";
+  const recognition = new Speech();
+  recognition.lang = navigator.language || "en-US";
 
-  micBtn.onclick = ()=>{
-    if(listening){
-      recognition.stop();
-      return;
-    }
-    speechBaseText = input.value.trim();
-    finalTranscript = "";
-    try{
-      recognition.start();
-    }catch(e){
-      console.log("Microphone could not start:",e);
-    }
+  recognition.onresult = event => {
+    $("messageInput").value = event.results[0][0].transcript;
   };
 
-  recognition.onstart = ()=>{
-    listening = true;
-    micBtn.classList.add("listening");
-    micBtn.textContent = "⏹";
-    input.placeholder = "Listening... speak now";
-  };
+  recognition.onerror = () => alert("Please allow microphone access.");
+  recognition.start();
+};
 
-  recognition.onresult = event=>{
-    let interim = "";
-    for(let i=event.resultIndex;i<event.results.length;i++){
-      const transcript = event.results[i][0].transcript;
-      if(event.results[i].isFinal){
-        finalTranscript += transcript + " ";
-      }else{
-        interim += transcript;
-      }
-    }
-
-    input.value = [
-      speechBaseText,
-      finalTranscript.trim(),
-      interim.trim()
-    ].filter(Boolean).join(" ");
-  };
-
-  recognition.onerror = event=>{
-    console.log("Microphone error:",event.error);
-    if(event.error==="not-allowed"){
-      alert("Please allow microphone access in your browser settings.");
-    }
-  };
-
-  recognition.onend = ()=>{
-    listening = false;
-    micBtn.classList.remove("listening");
-    micBtn.textContent = "🎙️";
-    input.placeholder = currentTopic ? "Ask about "+currentTopic+"..." : "Message Bizvanta AI...";
-  };
-}else{
-  micBtn.onclick = ()=>{
-    alert("Voice typing is not supported in this browser. Try an updated version of Chrome.");
-  };
-}
-
-if(chats.length){
-  const recent = chats.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0];
-  openChat(recent.id);
-}else{
-  createChat();
-}
+renderHistory();
 </script>
 </body>
 </html>
