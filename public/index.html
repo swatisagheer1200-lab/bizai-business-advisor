@@ -1,155 +1,449 @@
 
-<!-- Bizvanta AI: Chat input controls -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bizvanta AI</title>
 <style>
-  #bv-attach-menu {
-    display: none;
-    position: absolute;
-    bottom: 55px;
-    left: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 8px;
-    box-shadow: 0 4px 16px #0002;
-    z-index: 9999;
-  }
-  #bv-attach-menu button {
-    display: block;
-    width: 150px;
-    padding: 10px;
-    background: white;
-    border: 0;
-    text-align: left;
-    cursor: pointer;
-  }
-  #bv-attach-menu button:hover { background: #f3f3f3; }
-  #bv-preview { max-width: 180px; max-height: 120px; display: none; }
-  #bv-status { font-size: 12px; color: #666; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#202123;background:#fff;height:100vh;overflow:hidden}
+button,textarea,input{font:inherit}
+button{cursor:pointer}
+.app{display:flex;height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:#f7f7f8;padding:12px;display:flex;flex-direction:column;gap:12px;border-right:1px solid #eee}
+.brand{font-size:20px;font-weight:700;padding:8px 10px}
+.brand span{color:#00a884}
+.side-btn{width:100%;padding:12px;border:1px solid #e0e0e0;border-radius:12px;background:white;text-align:left}
+.topic-btn,.history-btn{width:100%;border:0;background:transparent;text-align:left;padding:11px 10px;border-radius:8px}
+.topic-btn:hover,.history-btn:hover{background:#eceef0}
+.section-label{font-size:12px;color:#777;padding:5px 8px}
+.topics{display:grid;gap:2px}
+.history{overflow:auto}
+.sidebar-bottom{margin-top:auto;border-top:1px solid #ddd;padding:12px 4px;font-size:12px;color:#555}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
+.topbar{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.chat-scroll{flex:1;overflow-y:auto;padding:15px 20px}
+.welcome{max-width:790px;margin:12vh auto 0;text-align:center}
+.welcome h1{font-size:30px;margin:0 0 15px}
+.welcome p{color:#777;margin:0}
+.suggestions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:24px}
+.suggestion{min-height:94px;background:#fff;border:1px solid #e0e0e0;border-radius:15px;text-align:left;padding:14px;font-size:14px}
+.suggestion:hover{background:#fafafa}
+.suggestion small{display:inline-block;color:#777;margin-top:8px}
+.messages{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.message{display:flex;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.message.user{justify-content:flex-end}
+.bubble{max-width:88%;padding:12px 15px;border-radius:17px}
+.message.user .bubble{background:#f1f1f1}
+.message.assistant .bubble{padding-left:0}
+.composer-wrap{padding:8px 20px 14px;background:white}
+.composer{max-width:790px;margin:auto;position:relative;border:1px solid #dadce0;border-radius:28px;padding:8px 10px;display:flex;align-items:flex-end;gap:8px;box-shadow:0 2px 8px #00000008}
+#messageInput{flex:1;min-width:0;resize:none;border:0;outline:0;max-height:150px;min-height:34px;padding:8px 3px;line-height:1.5}
+.icon-btn{width:38px;height:38px;flex-shrink:0;border:0;border-radius:50%;background:transparent;display:grid;place-items:center;color:#333}
+.icon-btn:hover{background:#eee}
+.send{background:#d6d6da;color:white}
+.send:disabled{opacity:.45}
+.mic.listening{background:#fee2e2;color:#b91c1c}
+.status{text-align:center;min-height:17px;font-size:12px;color:#777;margin-top:5px}
+.note{text-align:center;color:#999;font-size:11px;margin-top:5px}
+#attachmentMenu{position:absolute;bottom:58px;left:10px;display:none;background:white;border:1px solid #ddd;border-radius:13px;padding:7px;box-shadow:0 5px 20px #0002;z-index:10;width:180px}
+#attachmentMenu button{display:block;width:100%;border:0;background:white;text-align:left;padding:11px;border-radius:8px}
+#attachmentMenu button:hover{background:#f1f1f1}
+#preview{display:none;max-width:790px;margin:0 auto 8px;align-items:center;gap:10px;font-size:12px;color:#555}
+#preview img{width:50px;height:50px;object-fit:cover;border-radius:8px}
+#preview button{border:0;background:#eee;border-radius:50%;width:26px;height:26px}
+@media(max-width:700px){
+.sidebar{display:none}
+.welcome{margin-top:8vh}
+.welcome h1{font-size:27px}
+.suggestions{grid-template-columns:1fr}
+.composer-wrap{padding:8px}
+.chat-scroll{padding:12px}
+#speechLanguage{max-width:65px!important}
+}
 </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">Bizvanta <span>AI</span></div>
+    <button class="side-btn" id="newChat">＋ &nbsp; New chat</button>
 
-<div id="bv-tools" style="display:flex;align-items:center;gap:10px;position:relative;">
-  <button type="button" id="bv-plus" aria-label="Attachments">＋</button>
+    <div class="topics">
+      <button class="topic-btn" data-topic="Images">▧ &nbsp; Images</button>
+      <button class="topic-btn" data-topic="Study & Learning">▤ &nbsp; Study &amp; Learning</button>
+      <button class="topic-btn" data-topic="Health & Medicine">✚ &nbsp; Health &amp; Medicine</button>
+      <button class="topic-btn" data-topic="Everyday Help">◉ &nbsp; Everyday Help</button>
+      <button class="topic-btn" data-topic="Writing & Translation">✎ &nbsp; Writing &amp; Translation</button>
+      <button class="topic-btn" data-topic="Planning">▦ &nbsp; Planning</button>
+      <button class="topic-btn" data-topic="Business Ideas">◇ &nbsp; Business Ideas</button>
+      <button class="topic-btn" data-topic="Business Advisor">▥ &nbsp; Business Advisor</button>
+      <button class="topic-btn" data-topic="Marketing & Sales">↗ &nbsp; Marketing &amp; Sales</button>
+    </div>
 
-  <div id="bv-attach-menu">
-    <button type="button" id="bv-camera">📷 Camera</button>
-    <button type="button" id="bv-upload">📎 Upload file</button>
-  </div>
+    <div>
+      <div class="section-label">Recent chats</div>
+      <div class="history" id="history"></div>
+    </div>
+    <div class="sidebar-bottom"><b>Bizvanta AI</b><br>Your business assistant</div>
+  </aside>
 
-  <input id="bv-file" type="file" accept="image/*,.pdf,.txt,.doc,.docx" hidden>
-  <input id="bv-camera-file" type="file" accept="image/*" capture="environment" hidden>
+  <main class="main">
+    <div class="topbar">
+      <b>Bizvanta AI⌄</b>
+      <button class="icon-btn" id="topNewChat" title="New chat">✎</button>
+    </div>
 
-  <button type="button" id="bv-mic" aria-label="Voice input">🎙</button>
-  <button type="button" id="bv-send">➤ Send</button>
-  <button type="button" id="bv-speak" aria-label="Read answer aloud">🔊</button>
+    <div class="chat-scroll" id="chatScroll">
+      <section class="welcome" id="welcome">
+        <h1>Ready when you are.</h1>
+        <p>What would you like to work on today?</p>
+        <div class="suggestions">
+          <button class="suggestion" data-prompt="Help me create an image or sticker.">▧<br><b>Create an image or sticker</b><br><small>Turn an idea into a visual concept</small></button>
+          <button class="suggestion" data-prompt="Help me write or edit this text.">✎<br><b>Write or edit</b><br><small>Draft, rewrite, or improve text</small></button>
+          <button class="suggestion" data-prompt="Research a topic and explain it clearly.">⌕<br><b>Research a topic</b><br><small>Explore a business idea</small></button>
+        </div>
+      </section>
+      <section class="messages" id="messages"></section>
+    </div>
+
+    <div class="composer-wrap">
+      <div id="preview">
+        <img id="previewImage" alt="Selected image">
+        <span id="previewName"></span>
+        <button type="button" id="removeImage" title="Remove image">×</button>
+      </div>
+
+      <form class="composer" id="chatForm">
+        <div id="attachmentMenu">
+          <button type="button" id="cameraOption">📷 &nbsp; Camera</button>
+          <button type="button" id="uploadOption">▧ &nbsp; Upload image</button>
+        </div>
+
+        <button type="button" class="icon-btn" id="plusBtn" title="Add photo" aria-label="Add photo">＋</button>
+
+        <textarea id="messageInput" rows="1" placeholder="Message Bizvanta AI..." aria-label="Message Bizvanta AI"></textarea>
+
+        <select id="speechLanguage" title="Voice language" style="max-width:75px;border:0;background:transparent;color:#666;font-size:11px;outline:0">
+          <option value="ur-PK">Urdu</option>
+          <option value="en-US">English</option>
+        </select>
+
+        <button type="button" class="icon-btn mic" id="micBtn" title="Voice typing" aria-label="Voice typing">🎙</button>
+        <button type="submit" class="icon-btn send" id="sendBtn" title="Send" aria-label="Send">↑</button>
+      </form>
+
+      <input type="file" id="uploadInput" accept="image/*" hidden>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+      <div class="status" id="status"></div>
+      <div class="note">Bizvanta AI can make mistakes. Check important information.</div>
+    </div>
+  </main>
 </div>
 
-<img id="bv-preview" alt="Selected image preview">
-<div id="bv-status" role="status"></div>
-
 <script>
-(() => {
-  const $ = id => document.getElementById(id);
-  let selectedFile = null;
+const input = document.getElementById('messageInput');
+const form = document.getElementById('chatForm');
+const messagesEl = document.getElementById('messages');
+const welcome = document.getElementById('welcome');
+const statusEl = document.getElementById('status');
+const sendBtn = document.getElementById('sendBtn');
+const micBtn = document.getElementById('micBtn');
+const language = document.getElementById('speechLanguage');
+const attachmentMenu = document.getElementById('attachmentMenu');
+const uploadInput = document.getElementById('uploadInput');
+const cameraInput = document.getElementById('cameraInput');
+const preview = document.getElementById('preview');
+const STORAGE_KEY = 'bizvanta_chat_history_v2';
 
-  $('bv-plus').onclick = () => {
-    const menu = $('bv-attach-menu');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+let chats = loadChats();
+let activeChatId = null;
+let currentTopic = '';
+let selectedImage = null;
+let recognition = null;
+let listening = false;
+
+function loadChats(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}
+  catch(e){return []}
+}
+function saveChats(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(chats))}
+  catch(e){setStatus('Browser storage full.')}
+}
+function setStatus(text){statusEl.textContent=text}
+function makeId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function autoResize(){
+  input.style.height='auto';
+  input.style.height=Math.min(input.scrollHeight,150)+'px';
+}
+input.addEventListener('input',autoResize);
+
+function newChat(){
+  stopRecognition();
+  activeChatId=null;
+  currentTopic='';
+  selectedImage=null;
+  preview.style.display='none';
+  messagesEl.replaceChildren();
+  welcome.hidden=false;
+  input.value='';
+  input.placeholder='Message Bizvanta AI...';
+  autoResize();
+  setStatus('');
+  document.querySelectorAll('.topic-btn').forEach(b=>b.classList.remove('active'));
+  renderHistory();
+}
+document.getElementById('newChat').addEventListener('click',newChat);
+document.getElementById('topNewChat').addEventListener('click',newChat);
+
+document.querySelectorAll('.topic-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    newChat();
+    currentTopic=btn.dataset.topic;
+    btn.classList.add('active');
+    input.placeholder='Ask about '+currentTopic+'...';
+    input.focus();
+  });
+});
+
+document.querySelectorAll('.suggestion').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    input.value=btn.dataset.prompt||'';
+    autoResize();
+    input.focus();
+  });
+});
+
+document.getElementById('plusBtn').addEventListener('click',()=>{
+  attachmentMenu.style.display=attachmentMenu.style.display==='block'?'none':'block';
+});
+document.getElementById('cameraOption').addEventListener('click',()=>{
+  attachmentMenu.style.display='none';
+  cameraInput.click();
+});
+document.getElementById('uploadOption').addEventListener('click',()=>{
+  attachmentMenu.style.display='none';
+  uploadInput.click();
+});
+function handleImage(file){
+  if(!file)return;
+  if(!file.type.startsWith('image/')){
+    setStatus('Please choose an image file.');
+    return;
+  }
+  selectedImage=file;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    document.getElementById('previewImage').src=reader.result;
+    document.getElementById('previewName').textContent=file.name||'Camera photo selected';
+    preview.style.display='flex';
+    setStatus('Image attached. Type a message or press Send.');
   };
+  reader.readAsDataURL(file);
+}
+uploadInput.addEventListener('change',()=>handleImage(uploadInput.files[0]));
+cameraInput.addEventListener('change',()=>handleImage(cameraInput.files[0]));
+document.getElementById('removeImage').addEventListener('click',()=>{
+  selectedImage=null;
+  uploadInput.value='';
+  cameraInput.value='';
+  preview.style.display='none';
+  setStatus('');
+});
 
-  $('bv-camera').onclick = () => {
-    $('bv-attach-menu').style.display = 'none';
-    $('bv-camera-file').click();
-  };
+function renderHistory(){
+  const list=document.getElementById('history');
+  list.replaceChildren();
+  chats.slice().sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,30).forEach(chat=>{
+    const btn=document.createElement('button');
+    btn.className='history-btn';
+    btn.textContent='◷ '+(chat.title||'New chat');
+    btn.title=btn.textContent;
+    btn.addEventListener('click',()=>openChat(chat.id));
+    list.appendChild(btn);
+  });
+}
+function ensureChat(firstMessage){
+  if(activeChatId)return chats.find(c=>c.id===activeChatId);
+  const chat={id:makeId(),title:firstMessage.slice(0,42)||'New chat',topic:currentTopic,messages:[],updatedAt:Date.now()};
+  chats.push(chat);
+  activeChatId=chat.id;
+  saveChats();
+  renderHistory();
+  return chat;
+}
+function addMessage(role,text){
+  const row=document.createElement('div');
+  row.className='message '+role;
+  const bubble=document.createElement('div');
+  bubble.className='bubble';
+  bubble.textContent=String(text??'');
+  row.appendChild(bubble);
+  messagesEl.appendChild(row);
+  document.getElementById('chatScroll').scrollTop=document.getElementById('chatScroll').scrollHeight;
+  return row;
+}
+function openChat(id){
+  stopRecognition();
+  const chat=chats.find(c=>c.id===id);
+  if(!chat)return;
+  activeChatId=id;
+  currentTopic=chat.topic||'';
+  welcome.hidden=true;
+  messagesEl.replaceChildren();
+  chat.messages.forEach(m=>addMessage(m.role,m.text));
+  document.querySelectorAll('.topic-btn').forEach(b=>b.classList.toggle('active',b.dataset.topic===currentTopic));
+  input.placeholder=currentTopic?'Ask about '+currentTopic+'...':'Message Bizvanta AI...';
+  setStatus('');
+}
 
-  $('bv-upload').onclick = () => {
-    $('bv-attach-menu').style.display = 'none';
-    $('bv-file').click();
-  };
+async function sendMessage(){
+  const message=input.value.trim();
+  if((!message&&!selectedImage)||sendBtn.disabled)return;
 
-  function chooseFile(file) {
-    if (!file) return;
-    selectedFile = file;
-    const preview = $('bv-preview');
-    if (file.type.startsWith('image/')) {
-      preview.src = URL.createObjectURL(file);
-      preview.style.display = 'block';
-    } else {
-      preview.style.display = 'none';
-    }
-    $('bv-status').textContent = 'Selected: ' + file.name;
+  stopRecognition();
+  attachmentMenu.style.display='none';
+
+  const chat=ensureChat(message||'Image question');
+  const userMessage=currentTopic?'['+currentTopic+'] '+message:message;
+  chat.messages.push({role:'user',text:message||(selectedImage?'Image attached':'')});
+  chat.updatedAt=Date.now();
+  if(chat.messages.filter(m=>m.role==='user').length===1){
+    chat.title=(message||'Image question').slice(0,42);
+  }
+  saveChats();
+  renderHistory();
+  welcome.hidden=true;
+
+  addMessage('user',(message?message+'\\n':'')+(selectedImage?'[Image attached: '+selectedImage.name+']':''));
+
+  let imageData=null;
+  let mimeType=null;
+  if(selectedImage){
+    imageData=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result).split(',')[1]);
+      reader.onerror=()=>reject(new Error('Could not read the selected image.'));
+      reader.readAsDataURL(selectedImage);
+    }).catch(e=>{setStatus(e.message);return null});
+    mimeType=selectedImage.type;
   }
 
-  $('bv-file').onchange = e => chooseFile(e.target.files[0]);
-  $('bv-camera-file').onchange = e => chooseFile(e.target.files[0]);
+  input.value='';
+  autoResize();
+  selectedImage=null;
+  uploadInput.value='';
+  cameraInput.value='';
+  preview.style.display='none';
 
-  // Voice input: supported in Chrome and some other browsers.
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+  sendBtn.disabled=true;
+  setStatus('Bizvanta AI is thinking...');
+  const waiting=addMessage('assistant','Thinking...');
 
-  $('bv-mic').onclick = () => {
-    if (!SpeechRecognition) {
-      $('bv-status').textContent =
-        'Voice typing is not supported in this browser.';
-      return;
-    }
+  try{
+    const response=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:userMessage||'Please describe this image.',
+        image:imageData,
+        mimeType:mimeType,
+        topic:currentTopic
+      })
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||data.message||'Request failed ('+response.status+')');
+    const answer=data.reply??data.response??data.text??data.message??(typeof data==='string'?data:'');
+    if(!answer)throw new Error('AI response was empty. Check your server response.');
+    waiting.querySelector('.bubble').textContent=String(answer);
+    chat.messages.push({role:'assistant',text:String(answer)});
+    chat.updatedAt=Date.now();
+    saveChats();
+    renderHistory();
+    setStatus('');
+  }catch(error){
+    waiting.querySelector('.bubble').textContent='Message send nahi ho saka. Backend connection aur /api/chat check karein.';
+    setStatus(error.message||'Something went wrong.');
+  }finally{
+    sendBtn.disabled=false;
+    input.focus();
+  }
+}
+form.addEventListener('submit',event=>{
+  event.preventDefault();
+  sendMessage();
+});
+input.addEventListener('keydown',event=>{
+  if(event.key==='Enter'&&!event.shiftKey){
+    event.preventDefault();
+    form.requestSubmit();
+  }
+});
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
+function stopRecognition(){
+  if(recognition){
+    try{recognition.stop()}catch(e){}
+  }
+  listening=false;
+  micBtn.classList.remove('listening');
+}
+micBtn.addEventListener('click',()=>{
+  if(listening&&recognition){
+    recognition.stop();
+    return;
+  }
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    setStatus('Voice typing is not supported here. Try the latest Chrome.');
+    return;
+  }
+  recognition=new SpeechRecognition();
+  recognition.lang=language.value;
+  recognition.continuous=true;
+  recognition.interimResults=true;
+  let finalText='';
+  const baseText=input.value?input.value+' ':'';
 
-    recognition.onresult = event => {
-      const spoken = event.results[0][0].transcript;
-      const input = document.querySelector(
-        '#message-input, #message, textarea, input[type="text"]'
-      );
-      if (input) {
-        input.value = (input.value ? input.value + ' ' : '') + spoken;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      } else {
-        $('bv-status').textContent = 'Voice: ' + spoken;
-      }
-    };
-
-    recognition.onerror = () => {
-      $('bv-status').textContent = 'Mic error. Check microphone permission.';
-    };
-    recognition.start();
+  recognition.onstart=()=>{
+    listening=true;
+    micBtn.classList.add('listening');
+    setStatus('Listening... Speak now. Press the mic again to stop.');
   };
-
-  // Reads the latest assistant response aloud.
-  $('bv-speak').onclick = () => {
-    const answer = document.querySelector(
-      '.assistant-message:last-child, .ai-message:last-child, [data-role="assistant"]:last-child'
-    );
-    const text = answer?.innerText?.trim();
-
-    if (!text) {
-      $('bv-status').textContent =
-        'No AI answer found yet. Connect this button to your answer element.';
-      return;
+  recognition.onresult=event=>{
+    let interim='';
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      const result=event.results[i];
+      if(result.isFinal)finalText+=result[0].transcript+' ';
+      else interim+=result[0].transcript;
     }
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
+    input.value=baseText+finalText+interim;
+    autoResize();
   };
-
-  // IMPORTANT: connect this button to your existing message/API function.
-  $('bv-send').onclick = () => {
-    const input = document.querySelector(
-      '#message-input, #message, textarea, input[type="text"]'
-    );
-    const message = input?.value?.trim();
-
-    if (!message && !selectedFile) {
-      $('bv-status').textContent = 'Please type a message or choose a file.';
-      return;
-    }
-
-    $('bv-status').textContent =
-      'Input ready. Connect bv-send to your existing AI send/API function.';
-    // Your existing backend send function must be called here.
-    // Send selectedFile using FormData if your backend supports attachments.
+  recognition.onerror=event=>{
+    setStatus(event.error==='not-allowed'?'Allow microphone permission in your browser.':'Voice typing error: '+event.error);
   };
-})();
+  recognition.onend=()=>{
+    listening=false;
+    micBtn.classList.remove('listening');
+    recognition=null;
+    if(finalText.trim())setStatus('Voice text ready. Review it and press Send.');
+  };
+  try{recognition.start()}
+  catch(e){setStatus('Could not start the microphone. Try again.');recognition=null}
+});
+language.addEventListener('change',()=>{
+  if(listening&&recognition){
+    recognition.stop();
+  }
+});
+document.addEventListener('click',event=>{
+  if(!attachmentMenu.contains(event.target)&&event.target.id!=='plusBtn'){
+    attachmentMenu.style.display='none';
+  }
+});
+renderHistory();
 </script>
+</body>
+</html>
