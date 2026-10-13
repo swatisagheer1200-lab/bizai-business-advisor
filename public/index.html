@@ -1,468 +1,174 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bizvanta AI</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bizvanta AI — Demo</title>
 <style>
+:root{--bg:#fff;--panel:#f7f7f8;--line:#e5e5e5;--text:#202123;--blue:#2563eb}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#202123}
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:270px;background:#f7f7f8;padding:14px;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #e2e2e7}
-.brand{font-size:24px;font-weight:700;padding:12px 8px 24px}
-.brand span{color:#00a99d}
-.nav{display:flex;flex-direction:column;gap:5px}
-.nav button,.newchat{background:transparent;border:0;text-align:left;padding:12px;border-radius:9px;font-size:14px;color:#262626;cursor:pointer}
-.nav button:hover,.newchat:hover,.history-item:hover{background:#e9e9eb}
-.newchat{border:1px solid #d5d5df;background:white;margin-bottom:18px;font-weight:600}
-.section-label{font-size:12px;color:#777;letter-spacing:1px;padding:18px 8px 9px}
-.history{flex:1;min-height:60px;overflow-y:auto}
-.history-item{width:100%;display:flex;align-items:center;gap:8px;text-align:left;padding:10px 9px;border:0;background:transparent;border-radius:8px;cursor:pointer;color:#262626;font-size:13px}
-.history-item.active{background:#e5e5e9}
-.history-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.delete-chat{border:0;background:transparent;cursor:pointer;color:#777;font-size:17px;padding:2px 5px;border-radius:5px}
-.delete-chat:hover{background:#d7d7dc;color:#111}
-.sidebottom{font-size:12px;color:#777;line-height:1.5;padding:10px 5px}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
-.topbar{height:55px;flex-shrink:0;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 24px;font-weight:600}
-.chat{flex:1;overflow:auto;padding:24px 18px 210px}
-.welcome{max-width:850px;margin:12vh auto 0;text-align:center}
-.welcome-title{font-size:30px;font-weight:400;margin:0 0 38px;color:#171717}
-.quick-actions{display:flex;flex-direction:column;gap:8px;max-width:850px;margin:32px auto 0;text-align:left}
-.quick-action{display:flex;align-items:center;gap:14px;padding:10px 18px;border:0;background:transparent;color:#777;font-size:16px;cursor:pointer;border-radius:12px}
-.quick-action:hover{background:#f6f6f6;color:#222}
-.quick-action span{width:22px;text-align:center;font-size:20px;color:#777}
-.message{max-width:760px;margin:18px auto;padding:12px 16px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
-.message.user{background:#f2f2f2;border-radius:18px;margin-left:auto;width:fit-content;max-width:80%}
-.message.assistant{background:white}
-.message img{display:block;max-width:100%;max-height:320px;border-radius:12px;margin-top:10px}
-.composer-wrap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#fff 25%);padding:20px}
-.composer{max-width:850px;margin:auto;border:1px solid #e0e0e0;border-radius:30px;padding:8px 14px;box-shadow:0 3px 14px #0000000a;background:#fff}
-.composer-row{display:flex;align-items:center;gap:10px}
-.composer-row #message{flex:1;min-width:0;min-height:38px;padding:9px 4px}
-.composer-row .controls{gap:8px;flex-shrink:0}
-.composer-row .iconbtn{background:transparent;width:34px;height:34px;color:#555}
-.composer-row .sendbtn{background:#202123;width:42px;height:42px}
-#message{width:100%;border:0;outline:0;resize:none;min-height:34px;max-height:150px;font:16px Arial;padding:8px;background:transparent}
-.controls{display:flex;align-items:center;gap:8px}
-.iconbtn{width:38px;height:38px;border:0;border-radius:50%;background:#f0f0f0;cursor:pointer;font-size:20px}
-.iconbtn:hover{background:#e3e3e3}
-.sendbtn{margin-left:auto;background:#202123;color:#fff;border:0;border-radius:50%;width:40px;height:40px;font-size:22px;cursor:pointer}
-.sendbtn:disabled{opacity:.5;cursor:wait}
-#micBtn{background:transparent;color:#444;font-size:19px;width:36px;height:36px;flex-shrink:0}
-#micBtn:hover{background:#f0f0f0}
-#micBtn.listening{background:#fee2e2;color:#b91c1c}
-#fileInput,#cameraInput{display:none}
-#previewWrap{display:none;position:relative;width:max-content;margin:8px 0}
-#preview{max-width:120px;max-height:100px;border-radius:10px;display:block}
-#removeImage{position:absolute;right:-7px;top:-7px;border:0;border-radius:50%;background:#222;color:#fff;width:23px;height:23px;cursor:pointer}
-.hint{text-align:center;font-size:11px;color:#888;margin-top:9px}
-@media(max-width:650px){
-.welcome{margin-top:8vh}
-.welcome-title{font-size:25px;margin-bottom:30px}
-.quick-actions{margin-top:25px}
-.quick-action{font-size:14px}
-.composer-row{gap:5px}
-.composer-row #message{font-size:15px}
-.sidebar{width:76px;padding:8px}
-.brand{font-size:0;padding:12px 4px 20px}
-.brand:after{content:"B";font-size:22px;color:#00a99d}
-.newchat{font-size:0;text-align:center;padding:12px 2px}
-.newchat:after{content:"＋";font-size:20px}
-.nav button{font-size:0;text-align:center;padding:12px 2px}
-.nav button span{font-size:20px}
-.section-label{font-size:0;padding:10px 0}
-.history-item{padding:10px 3px}
-.history-title,.delete-chat{display:none}
-.sidebottom{font-size:0;padding:4px}
-.topbar{padding:0 12px}
-.chat{padding:15px 8px 160px}
-.composer-wrap{padding:12px 8px}
-}
+body{margin:0;font:16px/1.4 Arial,sans-serif;color:var(--text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:260px;background:var(--panel);border-right:1px solid var(--line);padding:16px 10px;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.brand{font-size:21px;font-weight:700;padding:8px 10px 18px}
+.nav{padding:10px 12px;border-radius:10px;cursor:pointer}
+.nav:hover,.nav.active{background:#e9e9eb}
+.section{font-size:13px;color:#777;padding:18px 12px 4px}
+.bottom{margin-top:auto;border-top:1px solid var(--line);padding:14px 10px;color:#555;font-size:14px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:62px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #fafafa}
+.pill{border:1px solid #e5e5e5;border-radius:30px;padding:9px 30px}
+.content{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:70px 24px 20px}
+.welcome{font-size:30px;margin:55px 0 40px;text-align:center}
+.composer-wrap{width:min(780px,100%);margin-top:auto}
+.composer{display:flex;align-items:center;gap:10px;border:1px solid #e5e5e5;border-radius:28px;padding:10px 12px;position:relative;background:white;box-shadow:0 4px 20px #00000008}
+.iconbtn{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;border-radius:50%;cursor:pointer;font-size:24px;color:#555;flex-shrink:0}
+.iconbtn:hover{background:#f1f1f1}
+.entry{border:0;outline:0;resize:none;flex:1;font:16px Arial;min-width:0;max-height:140px;padding:8px 2px}
+.send{background:var(--blue);color:white;font-size:18px}
+.attach-menu{position:absolute;left:6px;bottom:58px;background:white;border:1px solid #e5e5e5;border-radius:14px;box-shadow:0 8px 28px #0002;padding:7px;width:225px;display:none;z-index:5}
+.attach-menu.show{display:block}
+.menuitem{display:flex;gap:10px;align-items:center;padding:12px;border-radius:9px;cursor:pointer;font-size:14px}
+.menuitem:hover{background:#f3f3f3}
+.preview{display:none;margin-bottom:10px;padding:9px 12px;background:#f6f6f6;border-radius:12px;font-size:13px}
+.preview.show{display:block}
+.messages{width:min(780px,100%);display:flex;flex-direction:column;gap:16px}
+.bubble{padding:13px 17px;border-radius:18px;max-width:85%;white-space:pre-wrap}
+.user{align-self:flex-end;background:#f0f0f0}
+.status{font-size:12px;color:#777;text-align:center;margin-top:10px;min-height:16px}
+@media(max-width:650px){.sidebar{display:none}.content{padding:20px 12px}.welcome{font-size:25px;margin:35px 0 25px}.composer{gap:5px;padding:7px}.iconbtn{width:30px;height:30px}.entry{font-size:15px}}
 </style>
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand">Bizvanta <span>AI</span></div>
-    <button class="newchat" id="newChat">＋ &nbsp; New Chat</button>
-    <div class="nav">
-      <button data-topic="Images & Photos"><span>▧</span> Images</button>
-      <button data-topic="Study & Learning"><span>▤</span> Study & Learning</button>
-      <button data-topic="Health & Medicine"><span>♡</span> Health & Medicine</button>
-      <button data-topic="Everyday Help"><span>✧</span> Everyday Help</button>
-      <button data-topic="Writing & Translation"><span>文</span> Writing & Translation</button>
-      <button data-topic="Planning"><span>▦</span> Planning</button>
-      <button data-topic="Business Ideas"><span>◈</span> Business Ideas</button>
-      <button data-topic="Business Advisor"><span>▣</span> Business Advisor</button>
-      <button data-topic="Marketing & Sales"><span>↗</span> Marketing & Sales</button>
-    </div>
-    <div class="section-label">RECENT CHATS</div>
-    <div class="history" id="history"></div>
-    <div class="sidebottom">Your business partner, powered by AI.</div>
-  </aside>
-
-  <section class="main">
-    <div class="topbar" id="topbar">Bizvanta AI</div>
-    <div class="chat" id="chat"></div>
+<aside class="sidebar">
+  <div class="brand">Bizvanta AI</div>
+  <div class="nav active">✎ &nbsp; New chat</div>
+  <div class="nav">▧ &nbsp; Images</div>
+  <div class="nav">◉ &nbsp; Study &amp; Learning</div>
+  <div class="nav">☼ &nbsp; Everyday Help</div>
+  <div class="nav">▤ &nbsp; Writing &amp; Translation</div>
+  <div class="nav">▦ &nbsp; Planning</div>
+  <div class="section">Business</div>
+  <div class="nav">◇ &nbsp; Business Ideas</div>
+  <div class="nav">▣ &nbsp; Business Advisor</div>
+  <div class="nav">↗ &nbsp; Marketing &amp; Sales</div>
+  <div class="bottom">◉ &nbsp; Demo account<br><span style="color:#888">Preview mode</span></div>
+</aside>
+<main class="main">
+  <div class="top"><div class="pill">Chat</div></div>
+  <div class="content">
+    <div class="welcome" id="welcome">Ready when you are.</div>
+    <div class="messages" id="messages"></div>
     <div class="composer-wrap">
+      <div class="preview" id="preview"></div>
       <div class="composer">
-        <div id="previewWrap">
-          <img id="preview" alt="Selected image preview">
-          <button id="removeImage" title="Remove image">×</button>
-        </div>
-        <div class="composer-row">
-          <button class="iconbtn" id="plusBtn" title="Upload image">＋</button>
-          <textarea id="message" rows="1" placeholder="Message Bizvanta AI..."></textarea>
-          <div class="controls">
-            <button class="iconbtn" id="cameraBtn" title="Take a photo">♧</button>
-            <input id="fileInput" type="file" accept="image/*">
-            <input id="cameraInput" type="file" accept="image/*" capture="environment">
-            <button class="iconbtn" id="micBtn" title="Voice input" aria-label="Voice input">🎙</button>
-            <button class="sendbtn" id="sendBtn" title="Send">↑</button>
-          </div>
+        <button class="iconbtn" id="plus" aria-label="Add attachment">＋</button>
+        <textarea class="entry" id="entry" rows="1" placeholder="Message Bizvanta AI"></textarea>
+        <button class="iconbtn" id="mic" aria-label="Voice input" title="Voice input">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="3" width="6" height="12" rx="3"></rect>
+            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path>
+          </svg>
+        </button>
+        <button class="iconbtn send" id="send" aria-label="Send">↑</button>
+        <div class="attach-menu" id="attachMenu">
+          <div class="menuitem" id="uploadBtn">▧ <span>Upload photo or file</span></div>
+          <div class="menuitem" id="cameraBtn">▣ <span>Take a photo with camera</span></div>
         </div>
       </div>
-      <div class="hint">Check important information before acting. Bizvanta AI can make mistakes.</div>
+      <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.doc,.docx" hidden>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+      <div class="status" id="status">Demo only — messages are not sent to an AI backend.</div>
     </div>
-  </section>
+  </div>
+</main>
 </div>
-
 <script>
-const chat = document.getElementById("chat");
-const historyEl = document.getElementById("history");
-const input = document.getElementById("message");
-const fileInput = document.getElementById("fileInput");
-const cameraInput = document.getElementById("cameraInput");
-const previewWrap = document.getElementById("previewWrap");
-const preview = document.getElementById("preview");
-const sendBtn = document.getElementById("sendBtn");
-const topbar = document.getElementById("topbar");
-const STORAGE_KEY = "bizvanta_chat_history_v1";
-let chats = loadChats(), currentChatId = null, currentTopic = "", selectedFile = null, busy = false;
+const $=id=>document.getElementById(id);
+const plus=$('plus'),menu=$('attachMenu'),entry=$('entry');
+const preview=$('preview'),status=$('status');
 
-function loadChats() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(saved) ? saved : [];
-  } catch (e) { return []; }
-}
-function saveChats() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-    renderHistory();
-  } catch (e) { alert("Browser storage is full. Delete old chats or use smaller images."); }
-}
-function makeId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
-function getCurrentChat() { return chats.find(c => c.id === currentChatId) || null; }
-
-function makeWelcome() {
-  const wrap = document.createElement("div");
-  wrap.className = "welcome";
-  const title = document.createElement("h1");
-  title.className = "welcome-title";
-  title.textContent = "Ready when you are.";
-  wrap.appendChild(title);
-  const actions = document.createElement("div");
-  actions.className = "quick-actions";
-  [
-    ["▧", "Create an image or sticker", "Images & Photos"],
-    ["✎", "Write or edit", "Writing & Translation"],
-    ["◎", "Search the web", "Everyday Help"]
-  ].forEach(([icon, label, topic]) => {
-    const button = document.createElement("button");
-    button.className = "quick-action";
-    const symbol = document.createElement("span");
-    symbol.textContent = icon;
-    const text = document.createElement("span");
-    text.textContent = label;
-    button.append(symbol, text);
-    button.onclick = () => {
-      currentTopic = topic;
-      input.placeholder = "Ask about " + topic + "...";
-      input.focus();
-    };
-    actions.appendChild(button);
-  });
-  wrap.appendChild(actions);
-  return wrap;
-}
-function showEmptyChat() {
-  chat.innerHTML = "";
-  chat.appendChild(makeWelcome());
-  topbar.textContent = "Bizvanta AI";
-  currentTopic = "";
-}
-function renderHistory() {
-  historyEl.innerHTML = "";
-  chats.slice().sort((a,b) => b.updatedAt - a.updatedAt).forEach(c => {
-    const row = document.createElement("div");
-    row.style.display = "flex";
-    row.style.alignItems = "center";
-    const b = document.createElement("button");
-    b.className = "history-item" + (c.id === currentChatId ? " active" : "");
-    b.title = c.title;
-    const icon = document.createElement("span");
-    icon.textContent = "▤";
-    const title = document.createElement("span");
-    title.className = "history-title";
-    title.textContent = c.title || "New chat";
-    b.append(icon,title);
-    b.onclick = () => openChat(c.id);
-    const del = document.createElement("button");
-    del.className = "delete-chat";
-    del.textContent = "×";
-    del.title = "Delete chat";
-    del.onclick = e => { e.stopPropagation(); deleteChat(c.id); };
-    row.append(b,del);
-    historyEl.appendChild(row);
-  });
-}
-function createChat() {
-  const c = {id:makeId(),title:"New chat",messages:[],updatedAt:Date.now(),topic:""};
-  chats.push(c);
-  currentChatId=c.id;
-  currentTopic="";
-  input.value="";
-  input.placeholder="Message Bizvanta AI...";
-  clearSelectedImage();
-  showEmptyChat();
-  saveChats();
-  input.focus();
-}
-function openChat(id) {
-  const c = chats.find(x => x.id === id);
-  if (!c) return;
-  currentChatId=id;
-  currentTopic=c.topic || "";
-  input.value="";
-  clearSelectedImage();
-  chat.innerHTML="";
-  if (!c.messages.length) chat.appendChild(makeWelcome());
-  else c.messages.forEach(m => addMessage(m.text,m.role,m.imageData || null));
-  topbar.textContent = c.title === "New chat" ? "Bizvanta AI" : c.title;
-  input.placeholder = currentTopic ? "Ask about " + currentTopic + "..." : "Message Bizvanta AI...";
-  renderHistory();
-}
-function deleteChat(id) {
-  const c = chats.find(x => x.id === id);
-  if (!c || !confirm('Delete "'+c.title+'"?')) return;
-  chats=chats.filter(x => x.id !== id);
-  if (currentChatId === id) {
-    currentChatId=null;
-    if (chats.length) openChat(chats.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0].id);
-    else createChat();
-  } else saveChats();
-}
-function addMessage(text,role,imageData) {
-  const div=document.createElement("div");
-  div.className="message "+role;
-  if(text) {
-    const t=document.createElement("div");
-    t.textContent=text;
-    div.appendChild(t);
-  }
-  if(imageData) {
-    const img=document.createElement("img");
-    img.src=imageData;
-    img.alt="Uploaded image";
-    div.appendChild(img);
-  }
-  chat.appendChild(div);
-  chat.scrollTop=chat.scrollHeight;
-  return div;
-}
-function saveMessage(text,role,imageData=null) {
-  const c=getCurrentChat();
-  if(!c)return;
-  c.messages.push({text,role,imageData,createdAt:Date.now()});
-  if(c.title==="New chat" && text)c.title=text.trim().slice(0,42)||"New chat";
-  c.updatedAt=Date.now();
-  c.topic=currentTopic;
-  topbar.textContent=c.title==="New chat"?"Bizvanta AI":c.title;
-  saveChats();
-}
-function clearSelectedImage() {
-  selectedFile=null;
-  preview.removeAttribute("src");
-  previewWrap.style.display="none";
-  fileInput.value="";
-  cameraInput.value="";
-}
-function chooseImage(file) {
+plus.addEventListener('click',e=>{
+  e.stopPropagation();
+  menu.classList.toggle('show');
+});
+document.addEventListener('click',e=>{
+  if(!menu.contains(e.target)&&e.target!==plus)menu.classList.remove('show');
+});
+$('uploadBtn').addEventListener('click',()=>{
+  menu.classList.remove('show');$('fileInput').click();
+});
+$('cameraBtn').addEventListener('click',()=>{
+  menu.classList.remove('show');$('cameraInput').click();
+});
+function showFile(file){
   if(!file)return;
-  if(!file.type.startsWith("image/")){alert("Please select an image.");return;}
-  if(file.size>8*1024*1024){alert("Please choose an image smaller than 8 MB.");return;}
-  selectedFile=file;
-  preview.src=URL.createObjectURL(file);
-  previewWrap.style.display="block";
-}
-function fileToDataURL(file) {
-  return new Promise((resolve,reject)=>{
-    const r=new FileReader();
-    r.onload=()=>resolve(String(r.result));
-    r.onerror=reject;
-    r.readAsDataURL(file);
-  });
-}
-function dataURLToBase64(url){return url.split(",")[1]||"";}
-
-document.getElementById("plusBtn").onclick=()=>fileInput.click();
-document.getElementById("cameraBtn").onclick=()=>cameraInput.click();
-fileInput.onchange=()=>{chooseImage(fileInput.files[0]);fileInput.value="";};
-cameraInput.onchange=()=>{chooseImage(cameraInput.files[0]);cameraInput.value="";};
-document.getElementById("removeImage").onclick=clearSelectedImage;
-document.getElementById("newChat").onclick=createChat;
-document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{
-  currentTopic=b.dataset.topic;
-  input.placeholder="Ask about "+currentTopic+"...";
-  const c=getCurrentChat();
-  if(c){c.topic=currentTopic;saveChats();}
-  input.focus();
-});
-
-async function sendMessage() {
-  if(busy)return;
-  const text=input.value.trim(),file=selectedFile;
-  if(!text&&!file)return;
-  if(!currentChatId||!getCurrentChat())createChat();
-  if(chat.querySelector(".welcome"))chat.innerHTML="";
-  busy=true;
-  sendBtn.disabled=true;
-  try {
-    let imageData=null,image=null,mimeType=null;
-    if(file) {
-      imageData=await fileToDataURL(file);
-      image=dataURLToBase64(imageData);
-      mimeType=file.type;
-    }
-    addMessage(text,"user",imageData);
-    saveMessage(text,"user",imageData);
-    input.value="";
-    clearSelectedImage();
-    const loading=addMessage("Thinking...","assistant");
-    const response=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        message:text||"Please describe this image and read any visible text.",
-        image,mimeType,topic:currentTopic
-      })
-    });
-    const data=await response.json().catch(()=>({}));
-    loading.remove();
-    if(!response.ok) {
-      const msg=data.error||"Request failed. Please try again.";
-      addMessage(msg,"assistant");
-      saveMessage(msg,"assistant");
-      return;
-    }
-    const reply=data.reply||"No answer received.";
-    addMessage(reply,"assistant");
-    saveMessage(reply,"assistant");
-  } catch(e) {
-    console.error(e);
-    const msg="Connection error. Check that the server is running, then try again.";
-    addMessage(msg,"assistant");
-    saveMessage(msg,"assistant");
-  } finally {
-    busy=false;
-    sendBtn.disabled=false;
-    input.focus();
+  preview.textContent='Selected: '+file.name;
+  preview.classList.add('show');
+  status.textContent='Demo only: file selected, not uploaded to a server.';
+  if(file.type.startsWith('image/')){
+    const img=document.createElement('img');
+    img.src=URL.createObjectURL(file);
+    img.alt='Selected photo preview';
+    img.style.cssText='display:block;max-width:180px;max-height:120px;margin-top:8px;border-radius:8px';
+    preview.appendChild(img);
   }
 }
-sendBtn.onclick=sendMessage;
-input.addEventListener("keydown",e=>{
-  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}
-});
+$('fileInput').addEventListener('change',e=>showFile(e.target.files[0]));
+$('cameraInput').addEventListener('change',e=>showFile(e.target.files[0]));
 
-/* Microphone: request permission after the user taps the mic button. */
-const micBtn=document.getElementById("micBtn");
-let recognition=null,isListening=false;
-
-micBtn.addEventListener("click",async()=>{
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition) {
-    alert("Voice typing is not supported in this browser. Please try the latest Chrome.");
+let recognition=null,listening=false;
+$('mic').addEventListener('click',()=>{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){
+    status.textContent='Voice recognition is not supported here. Try Chrome or Edge.';
     return;
   }
-  if(isListening&&recognition) {
-    try{recognition.stop();}catch(_){}
-    return;
-  }
-  try {
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) {
-      alert("Microphone access requires a secure HTTPS website. Open Bizvanta AI using its https:// link.");
-      return;
-    }
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    stream.getTracks().forEach(track=>track.stop());
-  } catch(err) {
-    if(err&&(err.name==="NotAllowedError"||err.name==="PermissionDeniedError")) {
-      alert("Microphone permission is blocked. Allow microphone access for Bizvanta AI in your browser site permissions, then try again.");
-    } else {
-      alert("Microphone could not be opened. Check that a microphone is connected and try again.");
-    }
-    return;
-  }
-
-  recognition=new SpeechRecognition();
-  recognition.lang="en-US";
-  recognition.continuous=true;
+  if(listening){recognition.stop();return;}
+  recognition=new SR();
+  recognition.lang='en-US';
   recognition.interimResults=true;
-  let finalText="";
-  const originalText=input.value?input.value.trimEnd()+" ":"";
-
+  recognition.continuous=false;
   recognition.onstart=()=>{
-    isListening=true;
-    micBtn.classList.add("listening");
-    micBtn.textContent="🔴";
-    micBtn.title="Stop voice typing";
+    listening=true;
+    $('mic').style.background='#fee2e2';
+    status.textContent='Listening… speak now';
   };
-  recognition.onresult=event=>{
-    let interim="";
-    for(let i=event.resultIndex;i<event.results.length;i++) {
-      const transcript=event.results[i][0].transcript;
-      if(event.results[i].isFinal)finalText+=transcript+" ";
-      else interim+=transcript;
-    }
-    input.value=originalText+finalText+interim;
-    input.style.height="auto";
-    input.style.height=Math.min(input.scrollHeight,150)+"px";
-    sendBtn.disabled=!input.value.trim()&&!selectedFile;
+  recognition.onresult=e=>{
+    let text='';
+    for(let i=e.resultIndex;i<e.results.length;i++)text+=e.results[i][0].transcript;
+    entry.value=text;
   };
-  recognition.onerror=event=>{
-    if(event.error==="not-allowed"||event.error==="service-not-allowed") {
-      alert("Microphone permission is blocked. Allow microphone access for Bizvanta AI and try again.");
-    } else if(event.error==="audio-capture") {
-      alert("No microphone was found. Check your microphone and try again.");
-    } else if(event.error==="network") {
-      alert("Speech recognition needs a working internet connection.");
-    }
+  recognition.onerror=e=>{
+    status.textContent=e.error==='not-allowed'
+      ?'Microphone permission blocked. Allow it in browser settings.'
+      :'Voice input error: '+e.error;
   };
   recognition.onend=()=>{
-    isListening=false;
-    micBtn.classList.remove("listening");
-    micBtn.textContent="🎙";
-    micBtn.title="Voice input";
-    recognition=null;
+    listening=false;
+    $('mic').style.background='transparent';
+    if(status.textContent==='Listening… speak now')
+      status.textContent='Voice captured. Review it, then press send.';
   };
-  try{recognition.start();}
-  catch(_) {
-    isListening=false;
-    micBtn.classList.remove("listening");
-    micBtn.textContent="🎙";
-    alert("Voice typing could not start. Please tap the microphone again.");
-  }
+  recognition.start();
 });
-
-if(chats.length) {
-  const recent=chats.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0];
-  openChat(recent.id);
-} else {
-  createChat();
+function submit(){
+  const value=entry.value.trim();
+  if(!value)return;
+  $('welcome').style.display='none';
+  const bubble=document.createElement('div');
+  bubble.className='bubble user';
+  bubble.textContent=value;
+  $('messages').appendChild(bubble);
+  entry.value='';
+  status.textContent='Demo only: message shown locally, not sent to AI.';
 }
+$('send').addEventListener('click',submit);
+entry.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();}
+});
 </script>
 </body>
 </html>
